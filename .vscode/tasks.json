@@ -1,0 +1,62 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "command": "${workspaceFolder}/Build.bat",
+      "label": "Build",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+    }
+    {
+      "type": "shell",
+      "command": "${workspaceFolder}/Bin/Editor.exe",
+      "label": "Run Editor",
+      "problemMatcher": [],
+      "group": {
+        "kind": "run"
+      }
+    },
+    {
+      "type": "shell",
+      "command": "${workspaceFolder}/Scripts/CleanAndBuild.bat",
+      "label": "Build Clean",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build"
+      }
+    },
+    {
+      "type": "shell",
+      "command": "${workspaceFolder}/Scripts/BuildEditor.bat",
+      "label": "Build Editor",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build"
+      }
+    },
+    {
+      "type": "shell",
+      "command": "${workspaceFolder}/Scripts/BuildEngine.bat",
+      "label": "Build Engine",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build"
+      }
+    },
+    {
+      "type": "shell",
+      "command": "${workspaceFolder}/Scripts/CopyAssets.bat",
+      "label": "AA Copy Assets",
+      "problemMatcher": [],
+      "group": {
+        "kind": "run"
+      }
+    }
+  ]
+}

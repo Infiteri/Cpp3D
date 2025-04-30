@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/Engine/Source",
+                "${workspaceFolder}/Engine/Vendor/ImGui",
+                "${workspaceFolder}/Engine/Vendor/ImGuizmo"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE",
+                "CORE_WINDOWS_PLATFORM",
+                "CORE_BUILD_DLL"
+            ],
+            "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+            "cStandard": "c23",
+            "cppStandard": "c++23",
+            "intelliSenseMode": "windows-gcc-x64",
+            "mergeConfigurations": false
+        }
+    ],
+    "version": 4
+}

@@ -1,0 +1,28 @@
+{
+  "configurations": [
+    {
+      "name": "Windows Launch",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/Bin/Editor.exe",
+      "cwd": "${workspaceRoot}/Bin",
+      "args": [],
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "newExternalWindow"
+    },
+    {
+      "name": "Windows Debug Launch",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceRoot}/Bin/Editor.exe",
+      "cwd": "${workspaceRoot}/Bin",
+      "args": [],
+      "stopAtEntry": false,
+      "environment": [],
+      "console": "newExternalWindow"
+    }
+  ]
+}
+
+

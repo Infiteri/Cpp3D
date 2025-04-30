@@ -1,0 +1,94 @@
+#include "Mesh.h"
+#include "Base.h"
+#include "Renderer/Geometry/Geometry.h"
+#include "Renderer/Material/MaterialSystem.h"
+
+#include <glad/glad.h>
+
+namespace Core
+{
+    BoxGeometry geometry{6, 2, 2};
+
+    Mesh::Mesh() : geometryArray(nullptr)
+    {
+        BufferGeometryArray();
+        SetMaterialToDefault();
+    }
+
+    Mesh::~Mesh() { DestroyGeometryArray(); }
+
+    void Mesh::DestroyGeometryArray()
+    {
+        if (geometryArray)
+            delete geometryArray;
+
+        geometryArray = nullptr;
+    }
+
+    void Mesh::BufferGeometryArray()
+    {
+        DestroyGeometryArray();
+        geometryArray = new VertexArray();
+        geometryArray->GenerateVertexBuffer(geometry.Vertices.data(),
+                                            geometry.Vertices.size() * sizeof(Vertex3D));
+        geometryArray->GetVertexBuffer()->AddLayout(0, 0, 3);
+        geometryArray->GetVertexBuffer()->AddLayout(1, 3, 2);
+        geometryArray->GenerateIndexBuffer(geometry.Indices.data(),
+                                           geometry.Indices.size() * sizeof(u32));
+    }
+
+    void Mesh::DestroyMaterial()
+    {
+        CE_VERIFY(material);
+
+        switch (materialType)
+        {
+        case MaterialType::Config:
+            delete material;
+            break;
+
+        case MaterialType::File:
+            MaterialSystem::Remove(material->GetName());
+            break;
+
+        default:
+            break;
+        }
+
+        material = nullptr;
+    }
+
+    void Mesh::SetMaterialToDefault()
+    {
+        DestroyMaterial();
+
+        material = MaterialSystem::GetDefault();
+        materialType = MaterialType::Default;
+    }
+
+    void Mesh::SetMaterial(const std::string &name)
+    {
+        DestroyMaterial();
+        material = MaterialSystem::Get(name);
+    }
+
+    void Mesh::SetMaterial(const Material::Configuration &config)
+    {
+        DestroyMaterial();
+        material = new Material(config);
+    }
+
+    void Mesh::Render(Shader *shader)
+    {
+        CE_VERIFY(material);
+
+        if (!geometryArray)
+            BufferGeometryArray();
+
+        material->Use(shader);
+
+        geometryArray->Bind();
+        geometryArray->GetVertexBuffer()->Bind();
+        geometryArray->GetIndexBuffer()->Draw();
+    }
+} // namespace Core
