@@ -37,7 +37,6 @@ namespace Core
 
         static void SetColor(const Color &color);
         static CE_API Color &GetColor();
-        static CE_API Mesh *GetMesh();
 
         static void BeginFrame();
         static void Render();

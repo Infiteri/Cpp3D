@@ -1,0 +1,80 @@
+#include "Actor.h"
+#include "Core/Logger.h"
+
+namespace Core
+{
+    Actor::Actor() { state = State::Uninitialzied; }
+
+    Actor::Actor(const std::string &name) : name(name) { state = State::Uninitialzied; }
+
+    Actor::~Actor()
+    {
+        for (auto comp : components)
+            delete comp;
+
+        components.clear();
+    }
+
+    void Actor::SetName(const std::string &newName) { name = newName; }
+
+    void Actor::Start()
+    {
+        if (state == State::Running)
+        {
+            CE_LOG("CE_SCENE", Warn,
+                   "Attempting to call Start on actor that is already running, nothing done");
+            return;
+        }
+
+        state = State::Started;
+
+        for (auto comp : components)
+        {
+            comp->Start();
+        }
+    }
+
+    void Actor::Update()
+    {
+        if (state != State::Started && state != State::Running)
+        {
+            CE_LOG("CE_SCENE", Warn, "Calling update on actor that isn't started, nothing done.");
+            return;
+        }
+
+        state = State::Running;
+
+        for (auto comp : components)
+        {
+            comp->Update();
+        }
+    }
+
+    void Actor::Render()
+    {
+        if (state != State::Started && state != State::Running)
+        {
+            CE_LOG("CE_SCENE", Warn, "Calling render on actor that isn't started, nothing done.");
+            return;
+        }
+
+        state = State::Running;
+
+        for (auto comp : components)
+        {
+            comp->Render();
+        }
+    }
+
+    void Actor::Stop()
+    {
+        if (state == State::Stopped || state == State::Uninitialzied)
+            return;
+
+        for (auto comp : components)
+        {
+            comp->Stop();
+        }
+    }
+
+} // namespace Core

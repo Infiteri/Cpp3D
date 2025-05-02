@@ -10,9 +10,9 @@ namespace Core
         Layer() {};
         virtual ~Layer() {};
 
-        virtual void OnInit() {};
+        virtual void OnAttach() {};
         virtual void OnUpdate() {};
         virtual void OnImGuiRender() {};
-        virtual void OnDestroy() {};
+        virtual void OnDetach() {};
     };
 } // namespace Core

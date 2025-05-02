@@ -2,8 +2,10 @@
 #include "Core/Input.h"
 #include "Core/Logger.h"
 #include "Renderer/Camera/CameraSystem.h"
-#include "Renderer/Material/MaterialSystem.h"
 #include "Renderer/Renderer.h"
+#include "Scene/Components/Components.h"
+#include "Scene/Scene.h"
+#include "Scene/World.h"
 
 #include <imgui.h>
 
@@ -88,9 +90,18 @@ namespace Core
         }
     }
 
-    void EditorLayer::OnInit() { CE_TRACE("Hello world from layer"); }
+    void EditorLayer::OnAttach()
+    {
+        CE_TRACE("Hello world from layer");
 
-    void EditorLayer::OnDestroy() {}
+        Scene *scene = World::Create("Test");
+        World::Activate("Test");
+
+        auto test1 = scene->CreateActor("TTV");
+        auto mesh = test1->AddComponent<MeshComponent>();
+    }
+
+    void EditorLayer::OnDetach() {}
 
     void EditorLayer::OnUpdate()
     {
@@ -102,17 +113,6 @@ namespace Core
 
         if (Input::GetKey(Keys::H))
             Input::SetMouseMode(MouseModes::Visible);
-    }
-
-    static bool Vec3(Vector3 *v, const char *label)
-    {
-        float data[3] = {v->x, v->y, v->z};
-        if (ImGui::DragFloat3(label, data, 0.05))
-        {
-            v->Set(data[0], data[1], data[2]);
-            return true;
-        }
-        return false;
     }
 
     void EditorLayer::OnImGuiRender()
@@ -127,20 +127,6 @@ namespace Core
             c->b = data[2] * 255;
         }
 
-        c = &Renderer::GetMesh()->GetMaterial()->GetColor();
-        data[0] = c->r / 255;
-        data[1] = c->g / 255;
-        data[2] = c->b / 255;
-        if (ImGui::ColorEdit3("Mesh", data))
-        {
-            c->r = data[0] * 255;
-            c->g = data[1] * 255;
-            c->b = data[2] * 255;
-        }
-
-        auto camera = CameraSystem::GetActivePerspective();
-        if (Vec3(&camera->GetPosition(), "Position") || Vec3(&camera->GetRotation(), "Rotation"))
-            camera->UpdateView();
         ImGui::End();
     }
 } // namespace Core

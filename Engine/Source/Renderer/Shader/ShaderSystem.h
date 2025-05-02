@@ -12,7 +12,7 @@ namespace Core
     public:
         struct State
         {
-            std::string EngineAssetPath = "EngineAssest/Shaders";
+            std::string EngineAssetPath = "EngineAssets/Shaders";
             std::unordered_map<std::string, Shader> shaders;
         };
 

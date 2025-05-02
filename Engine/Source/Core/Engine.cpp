@@ -5,6 +5,7 @@
 #include "Core/Window/Window.h"
 #include "Layer/ImGuiLayer.h"
 #include "Renderer/Renderer.h"
+#include "Scene/World.h"
 #include "imgui.h"
 
 #include <GLFW/glfw3.h>
@@ -19,14 +20,16 @@ namespace Core
         Logger::Init();
 
         CE_DEFINE_LOG_CATEGORY("CE_RENDER", "Render");
+        CE_DEFINE_LOG_CATEGORY("CE_SCENE", "Scene");
     }
 
     void Engine::InitializeSubsystems()
     {
         LayerStack::Init();
         ImGuiLayer::Init();
-
         Renderer::Init();
+
+        World::Init();
     }
 
     void Engine::PreInit()
@@ -49,16 +52,18 @@ namespace Core
     {
         Renderer::BeginFrame();
         Renderer::Render();
+        World::RenderActive();
         Renderer::EndFrame();
 
         ImGuiLayer::BeginFrame();
-        LayerStack::OnImGuiRender();
+        LayerStack::RenderImGui();
         ImGuiLayer::EndFrame();
     }
 
     void Engine::Update()
     {
-        LayerStack::OnUpdate();
+        LayerStack::Update();
+        World::UpdateActive();
         state.Window->Update();
     }
 
@@ -66,6 +71,7 @@ namespace Core
     {
         ImGuiLayer::Shutdown();
         LayerStack::Shutdown();
+        World::Shutdown();
         delete state.Window;
     }
 

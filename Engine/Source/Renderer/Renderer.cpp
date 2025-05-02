@@ -19,7 +19,6 @@
 namespace Core
 {
     static Renderer::State state;
-    static Mesh *mesh;
     static Color BG{125, 125, 125, 255};
 
     // easier to keep track of what gets started and gets shutdown
@@ -71,9 +70,6 @@ namespace Core
                                            {90, state.ScreenViewport.GetAspect(), 0.01f, 1000.0f});
         CameraSystem::ActivatePerspectiveCamera("Renderer");
         CameraSystem::GetActivePerspective()->SetPosition({0, 0, 5});
-
-        mesh = new Mesh();
-        mesh->GetMaterial()->SetColorTexture("crate.png");
 
         glEnable(GL_MULTISAMPLE);
     }
@@ -128,7 +124,6 @@ namespace Core
         shhd->Use();
         shhd->Mat4(camera->GetProjection(), "uProjection");
         shhd->Mat4(camera->GetInvertedView(), "uView");
-        mesh->Render(shhd);
     }
 
     void Renderer::EndFrame()
@@ -149,5 +144,4 @@ namespace Core
         state.Screen.Array->GetVertexBuffer()->Draw();
     }
 
-    Mesh *Renderer::GetMesh() { return mesh; }
 } // namespace Core

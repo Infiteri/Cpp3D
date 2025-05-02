@@ -10,8 +10,8 @@ namespace Core
         EditorLayer() {};
         ~EditorLayer() {};
 
-        void OnInit();
-        void OnDestroy();
+        void OnAttach();
+        void OnDetach();
 
         void OnUpdate();
         void OnImGuiRender();

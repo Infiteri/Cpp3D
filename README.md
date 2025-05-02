@@ -1,6 +1,6 @@
 # CORE ENGINE
 
-Small engine made so I can learn some more about C++.
+Small and simple engine built for fun as a side project.
 
 ## BUILD
 
@@ -15,5 +15,3 @@ Used libraries:
     GLAD
 	ImGui
     GLFW
-
-Stiil in work as not even shader assets are present YET

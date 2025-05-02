@@ -108,8 +108,6 @@ namespace Core
     {
         Matrix4 m;
 
-        CE_DEBUG("%f %f %f %f", fov, aspect, near, far);
-
         float f = 1.0 / tanf(fov / 2);
         m.data[0] = f / aspect;
         m.data[1] = 0;

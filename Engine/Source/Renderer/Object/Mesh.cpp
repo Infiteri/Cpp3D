@@ -7,15 +7,20 @@
 
 namespace Core
 {
-    BoxGeometry geometry{6, 2, 2};
-
     Mesh::Mesh() : geometryArray(nullptr)
     {
+        geometry = new BoxGeometry(1, 1, 1);
+
         BufferGeometryArray();
         SetMaterialToDefault();
     }
 
-    Mesh::~Mesh() { DestroyGeometryArray(); }
+    Mesh::~Mesh()
+    {
+        DestroyGeometryArray();
+        DestroyMaterial();
+        DestroyGeometry();
+    }
 
     void Mesh::DestroyGeometryArray()
     {
@@ -27,14 +32,24 @@ namespace Core
 
     void Mesh::BufferGeometryArray()
     {
+        CE_VERIFY(geometry);
+
         DestroyGeometryArray();
         geometryArray = new VertexArray();
-        geometryArray->GenerateVertexBuffer(geometry.Vertices.data(),
-                                            geometry.Vertices.size() * sizeof(Vertex3D));
+        geometryArray->GenerateVertexBuffer(geometry->Vertices.data(),
+                                            geometry->Vertices.size() * sizeof(Vertex3D));
         geometryArray->GetVertexBuffer()->AddLayout(0, 0, 3);
         geometryArray->GetVertexBuffer()->AddLayout(1, 3, 2);
-        geometryArray->GenerateIndexBuffer(geometry.Indices.data(),
-                                           geometry.Indices.size() * sizeof(u32));
+        geometryArray->GenerateIndexBuffer(geometry->Indices.data(),
+                                           geometry->Indices.size() * sizeof(u32));
+    }
+
+    void Mesh::DestroyGeometry()
+    {
+        if (geometry)
+            delete geometry;
+
+        geometry = nullptr;
     }
 
     void Mesh::DestroyMaterial()
@@ -70,12 +85,21 @@ namespace Core
     {
         DestroyMaterial();
         material = MaterialSystem::Get(name);
+        materialType = MaterialType::File;
     }
 
     void Mesh::SetMaterial(const Material::Configuration &config)
     {
         DestroyMaterial();
         material = new Material(config);
+        materialType = MaterialType::Config;
+    }
+
+    void Mesh::SetGeometry(Geometry *geometry)
+    {
+        DestroyGeometry();
+
+        this->geometry = geometry;
     }
 
     void Mesh::Render(Shader *shader)
@@ -84,6 +108,8 @@ namespace Core
 
         if (!geometryArray)
             BufferGeometryArray();
+
+        shader->Mat4(Matrix4::Translate(Position), "uTransform");
 
         material->Use(shader);
 

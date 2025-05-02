@@ -29,14 +29,21 @@ namespace Core
             Default,
             Loaded
         };
-        TextureType colorTextureType = TextureType::None;
+
+        struct TexPair
+        {
+            Texture2D *Tex;
+            TextureType Type;
+
+            TexPair() : Tex(nullptr), Type(TextureType::None) {};
+        };
 
     private:
         Configuration state;
 
-        Texture2D *colorTexture = nullptr;
+        TexPair colorTexture;
 
-        void ClearTexture(Texture2D *texture);
+        void ClearTexture(TexPair &pair);
 
     public:
         Material();

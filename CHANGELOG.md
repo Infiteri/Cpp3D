@@ -14,3 +14,13 @@
 5. Added Textures from Images
 6. Added TextureSystem
 7. Fixes
+
+# 0.0.3 - 02.05.2025
+
+1. Fixed bugs
+2. Added Geometry to Mesh instance
+3. Added useful scripts
+4. Added Scene
+5. Added Actor
+6. Added World
+7. Added Component and MeshComponent 

@@ -12,20 +12,20 @@ namespace Core
     {
         for (auto layer : layers)
         {
-            layer->OnDestroy();
+            layer->OnDetach();
             delete layer;
         }
 
         layers.clear();
     }
 
-    void LayerStack::OnUpdate()
+    void LayerStack::Update()
     {
         for (auto l : layers)
             l->OnUpdate();
     }
 
-    void LayerStack::OnImGuiRender()
+    void LayerStack::RenderImGui()
     {
         for (auto l : layers)
             l->OnImGuiRender();
@@ -34,7 +34,7 @@ namespace Core
     void LayerStack::PushLayer(Layer *layer)
     {
         layers.push_back(layer);
-        layer->OnInit();
+        layer->OnAttach();
     }
 
     void LayerStack::PopLayer(Layer *layer)
@@ -44,7 +44,7 @@ namespace Core
         {
             if (layers[i] == layer)
             {
-                layers[i]->OnDestroy();
+                layers[i]->OnDetach();
                 delete layers[i];
                 layers.erase(layers.begin() + i);
             }

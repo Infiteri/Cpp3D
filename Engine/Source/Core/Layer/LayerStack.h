@@ -14,8 +14,8 @@ namespace Core
         static void Init();
         static void Shutdown();
 
-        static void OnUpdate();
-        static void OnImGuiRender();
+        static void Update();
+        static void RenderImGui();
 
         static void PushLayer(Layer *layer);
         static void PopLayer(Layer *layer);
