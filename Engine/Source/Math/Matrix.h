@@ -43,6 +43,8 @@ namespace Core
         static Matrix4 RotateXYZ(const Vector3 &vec);
         static Matrix4 RotateZYX(const Vector3 &vec);
 
+        static Matrix4 Scale(const Vector3 &vec);
+
         static Vector3 Forward(const Matrix4 &mat);
         static Vector3 Right(const Matrix4 &mat);
     };

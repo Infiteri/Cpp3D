@@ -32,7 +32,7 @@ namespace Core
         static void Init();
         static void Shutdown();
 
-        static void Viewport(int width, int height);
+        static CE_API void Viewport(int width, int height);
         static ViewportState &GetViewport();
 
         static void SetColor(const Color &color);
@@ -41,5 +41,7 @@ namespace Core
         static void BeginFrame();
         static void Render();
         static void EndFrame();
+
+        static CE_API u32 GetSceneViewportPassID();
     };
 } // namespace Core

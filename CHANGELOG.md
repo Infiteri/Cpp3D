@@ -24,3 +24,13 @@
 5. Added Actor
 6. Added World
 7. Added Component and MeshComponent 
+
+
+# 0.0.4 - 06.05.2025
+
+1. Added Scene Hierarchy Panel
+2. Added Transform
+3. Added children hierarchy to Actors
+4. Added camera movement for the editor
+5. Added editor Dockspace and basic UI
+6. Other

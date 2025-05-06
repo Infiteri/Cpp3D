@@ -40,6 +40,8 @@ namespace Core
         void Update();
         bool ShouldRun();
 
+        inline int GetX() { return state.X; };
+        inline int GetY() { return state.Y; };
         inline float GetWidth() { return state.Width; };
         inline float GetHeight() { return state.Height; };
 

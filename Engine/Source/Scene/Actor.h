@@ -1,11 +1,16 @@
 #pragma once
 
 #include "Base.h"
+#include "Core/UUID.h"
+#include "Math/Transform.h"
 #include "Scene/Components/Components.h"
 #include <string>
+#include <vector>
 
 namespace Core
 {
+    typedef std::vector<Actor *> ActorList;
+
     class CE_API Actor
     {
     private:
@@ -22,10 +27,33 @@ namespace Core
 
         std::vector<Component *> components;
 
+        Transform transform; // todo: local and global positions use the parent transforms when
+                             // parents and children exist
+        UUID id;
+
+        ActorList children;
+        Actor *parent = nullptr;
+
+        Matrix4 localMatrix;
+        Matrix4 globalMatrix;
+        void _CalculateTransformMatrices();
+
     public:
         Actor();
         Actor(const std::string &name);
         ~Actor();
+
+        inline Matrix4 &GetLocalMatrix() { return localMatrix; };
+        inline Matrix4 &GetGlobalMatrix() { return globalMatrix; };
+        inline Transform &GetTransform() { return transform; };
+
+        inline ActorList &GetChildren() { return children; };
+        inline Actor *GetParent() { return parent; };
+
+        Actor *CreateChild(const std::string &name);
+        void AddChild(Actor *childInstance);
+
+        inline UUID GetID() { return id; };
 
         inline std::string GetName() { return name; }
         void SetName(const std::string &newName);

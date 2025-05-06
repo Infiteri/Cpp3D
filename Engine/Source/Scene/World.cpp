@@ -20,6 +20,8 @@ namespace Core
         state.Scenes.clear();
     }
 
+    Scene *World::GetActive() { return state.ActiveScene; }
+
     Scene *World::Create(const std::string &name)
     {
         if (Exists(name))

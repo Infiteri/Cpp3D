@@ -1,4 +1,5 @@
 #include "EditorLayer.h"
+#include "Core/Engine.h"
 #include "Core/Input.h"
 #include "Core/Logger.h"
 #include "Renderer/Camera/CameraSystem.h"
@@ -11,122 +12,130 @@
 
 namespace Core
 {
-    static float speed = 3.0f;
-    static float sensitivity = 0.005;
-
-    static void UpdateCameraMovement()
-    {
-        auto cam = CameraSystem::GetActivePerspective();
-        CE_VERIFY(cam);
-
-        float speedActual = speed;
-        Vector3 rotation = cam->GetRotation();
-
-        if (Input::GetKey(Keys::W))
-        {
-            Matrix4 rotation = Matrix4::RotateZYX(cam->GetRotation());
-            Vector3 way = Matrix4::Forward(rotation);
-            cam->GetPosition() += way * speedActual;
-            cam->UpdateView();
-        }
-
-        if (Input::GetKey(Keys::S))
-        {
-            Matrix4 rotation = Matrix4::RotateZYX(cam->GetRotation());
-            Vector3 way = Matrix4::Forward(rotation);
-            cam->GetPosition() -= way * speedActual;
-            cam->UpdateView();
-        }
-
-        if (Input::GetKey(Keys::A))
-        {
-            Matrix4 rotation = Matrix4::RotateZYX(cam->GetRotation());
-            Vector3 way = Matrix4::Right(rotation);
-            cam->GetPosition() -= way * speedActual;
-            cam->UpdateView();
-        }
-
-        if (Input::GetKey(Keys::D))
-        {
-            Matrix4 rotation = Matrix4::RotateZYX(cam->GetRotation());
-            Vector3 way = Matrix4::Right(rotation);
-            cam->GetPosition() += way * speedActual;
-            cam->UpdateView();
-        }
-        if (Input::GetKey(Keys::J))
-        {
-            cam->GetRotation().y -= speed;
-            cam->UpdateView();
-        }
-        if (Input::GetKey(Keys::L))
-        {
-            cam->GetRotation().y += speed;
-            cam->UpdateView();
-        }
-        if (Input::GetKey(Keys::I))
-        {
-            cam->GetRotation().x += speed;
-            cam->UpdateView();
-        }
-        if (Input::GetKey(Keys::K))
-        {
-            cam->GetRotation().x -= speed;
-            cam->UpdateView();
-        }
-
-        Vector2 delta = Input::GetMouseDelta();
-        if (delta.x != 0 || delta.y != 0)
-        {
-            cam->GetRotation().y += delta.x * sensitivity;
-            cam->GetRotation().x -= delta.y * sensitivity;
-
-            float clamp = 90 * (3.14 / 180);
-            if (cam->GetRotation().x < -clamp)
-                cam->GetRotation().x = -clamp;
-            if (cam->GetRotation().x > clamp)
-                cam->GetRotation().x = clamp;
-
-            cam->UpdateView();
-        }
-    }
+    static EditorLayer::State state;
 
     void EditorLayer::OnAttach()
     {
-        CE_TRACE("Hello world from layer");
+        state.Camera = CameraSystem::GetActivePerspective();
+        state.Camera.Sensitivity = 0.005;
 
         Scene *scene = World::Create("Test");
         World::Activate("Test");
 
         auto test1 = scene->CreateActor("TTV");
-        auto mesh = test1->AddComponent<MeshComponent>();
+        test1->AddComponent<MeshComponent>();
+        test1->GetTransform().Position = {3, 3, 0};
+
+        auto test2 = test1->CreateChild("TTV2");
+        test2->GetTransform().Position = {3, 0, 0};
+        test2->AddComponent<MeshComponent>();
     }
 
     void EditorLayer::OnDetach() {}
 
     void EditorLayer::OnUpdate()
     {
-        if (Input::GetMouseMode() == MouseModes::Locked)
-            UpdateCameraMovement();
+        if (state.IsViewportFocused)
+            state.Camera.Update();
 
-        if (Input::GetKey(Keys::G))
-            Input::SetMouseMode(MouseModes::Locked);
+        if (Input::GetButton(Buttons::Right))
+        {
+            Vector2 pos = Input::GetMousePosition() +
+                          Vector2(Engine::GetWindow()->GetX(), Engine::GetWindow()->GetY());
 
-        if (Input::GetKey(Keys::H))
-            Input::SetMouseMode(MouseModes::Visible);
+            ImVec2 LT = state.Dockspace.ViewportLeftTop;
+            ImVec2 RB = state.Dockspace.ViewportRightBottom;
+
+            if (pos.x > LT.x && pos.y > LT.y && pos.x < LT.x + RB.x && pos.y < LT.y + RB.y)
+                state.IsViewportFocused = true;
+        }
+        else
+            state.IsViewportFocused = false;
     }
 
     void EditorLayer::OnImGuiRender()
     {
-        ImGui::Begin("Hello world");
-        Color *c = &Renderer::GetColor();
-        float data[3] = {c->r / 255, c->g / 255, c->b / 255};
-        if (ImGui::ColorEdit3("BG", data))
+        DockspaceBegin();
+        state.Panels.RenderImGui();
+        DockspaceRenderSceneViewport();
+        ImGui::Begin("ImGui Style Editor");
+
+        ImVec4 *colors = ImGui::GetStyle().Colors;
+        for (int i = 0; i < ImGuiCol_COUNT; i++)
         {
-            c->r = data[0] * 255;
-            c->g = data[1] * 255;
-            c->b = data[2] * 255;
+            const char *name = ImGui::GetStyleColorName(i);
+            ImGui::ColorEdit4(name, (float *)&colors[i]);
         }
 
         ImGui::End();
+        DockspaceEnd();
     }
+
+    // note: dockspace
+    void EditorLayer::DockspaceBegin()
+    {
+        if (state.Dockspace.Fullscreen)
+        {
+            ImGuiViewport *viewport = ImGui::GetMainViewport();
+            ImGui::SetNextWindowPos(viewport->Pos);
+            ImGui::SetNextWindowSize(viewport->Size);
+            ImGui::SetNextWindowViewport(viewport->ID);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+            state.Dockspace.WindowFlags |= ImGuiWindowFlags_NoTitleBar |
+                                           ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                                           ImGuiWindowFlags_NoMove;
+            state.Dockspace.WindowFlags |=
+                ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        }
+
+        if (state.Dockspace.Flags & ImGuiDockNodeFlags_PassthruCentralNode)
+            state.Dockspace.WindowFlags |= ImGuiWindowFlags_NoBackground;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        ImGui::Begin("DockSpace", &state.Dockspace.Open, state.Dockspace.WindowFlags);
+        ImGui::PopStyleVar();
+
+        if (state.Dockspace.Fullscreen)
+            ImGui::PopStyleVar(2);
+
+        // DockSpace
+        ImGuiIO &io = ImGui::GetIO();
+        ImGuiStyle &style = ImGui::GetStyle();
+        float minWinSizeX = style.WindowMinSize.x;
+        style.WindowMinSize.x = 250.0f;
+        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+        {
+            ImGuiID dockspaceId = ImGui::GetID("Dock");
+            ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), state.Dockspace.Flags);
+        }
+
+        style.WindowMinSize.x = minWinSizeX;
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
+        ImGui::PopStyleVar();
+    }
+
+    void EditorLayer::DockspaceRenderSceneViewport()
+    {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
+        ImGui::Begin("Viewport");
+        ImGui::PopStyleVar();
+
+        // todo: Resizing
+        ImVec2 viewportSize = ImGui::GetContentRegionAvail();
+        if (state.ViewportSize.x != viewportSize.x || state.ViewportSize.y != viewportSize.y)
+        {
+            Renderer::Viewport(viewportSize.x, viewportSize.y);
+            state.ViewportSize = viewportSize;
+        }
+        state.Dockspace.ViewportLeftTop = ImGui::GetWindowPos();
+        state.Dockspace.ViewportRightBottom = ImGui::GetWindowSize();
+
+        ImGui::Image((void *)(u64)(Renderer::GetSceneViewportPassID()), viewportSize, ImVec2{0, 1},
+                     ImVec2{1, 0});
+
+        ImGui::End();
+    }
+
+    void EditorLayer::DockspaceEnd() { ImGui::End(); }
 } // namespace Core

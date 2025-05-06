@@ -144,4 +144,6 @@ namespace Core
         state.Screen.Array->GetVertexBuffer()->Draw();
     }
 
+    u32 Renderer::GetSceneViewportPassID() { return state.Screen.Buffer->GetRenderPass(0)->Id; }
+
 } // namespace Core

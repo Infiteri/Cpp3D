@@ -250,6 +250,17 @@ namespace Core
         return Matrix4::RotateX(vec.z) * (Matrix4::RotateY(vec.y) * Matrix4::RotateZ(vec.x));
     }
 
+    Matrix4 Matrix4::Scale(const Vector3 &vec)
+    {
+        Matrix4 m;
+
+        m.data[0] = vec.x;
+        m.data[5] = vec.y;
+        m.data[10] = vec.z;
+
+        return m;
+    }
+
     Vector3 Matrix4::Forward(const Matrix4 &mat)
     {
         Vector3 vec;

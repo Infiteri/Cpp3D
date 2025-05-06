@@ -26,6 +26,8 @@ namespace Core
 
         static Scene *Create(const std::string &name);
 
+        static Scene *GetActive();
+
         static Scene *Get(const std::string &name);
 
         static void Remove(const std::string &name);

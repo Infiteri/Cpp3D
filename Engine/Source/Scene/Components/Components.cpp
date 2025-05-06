@@ -1,7 +1,9 @@
 #include "Components.h"
 #include "Base.h"
 
+#include "Core/Logger.h"
 #include "Renderer/Shader/ShaderSystem.h"
+#include "Scene/Actor.h"
 
 namespace Core
 {
@@ -18,8 +20,8 @@ namespace Core
     {
         CE_VERIFY(mesh)
 
-        // todo: transforms
-        mesh->Render(ShaderSystem::GetEngineResource("Object.glsl"));
+        Matrix4 m = owner->GetGlobalMatrix();
+        mesh->Render(ShaderSystem::GetEngineResource("Object.glsl"), m);
     }
 
     void MeshComponent::From(Mesh *o)

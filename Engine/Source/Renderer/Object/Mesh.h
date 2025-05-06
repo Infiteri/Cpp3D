@@ -12,21 +12,12 @@ namespace Core
     class CE_API Mesh
     {
     private:
-        // Some internal information regarding the type of the current material
-        enum class MaterialType
-        {
-            None = 0,
-            Default,
-            File,
-            Config
-        };
-
-        MaterialType materialType = MaterialType::Default;
-
-    private:
         VertexArray *geometryArray;
         Material *material;
         Geometry *geometry;
+
+        // Some internal information regarding the type of the current material
+        MaterialType materialType = MaterialType::Default;
 
         void DestroyGeometryArray();
         void BufferGeometryArray();
@@ -35,8 +26,6 @@ namespace Core
         void DestroyGeometry();
 
     public:
-        Vector3 Position;
-
         Mesh();
         ~Mesh();
 
@@ -47,7 +36,8 @@ namespace Core
         void SetGeometry(Geometry *geometry);
 
         inline Material *GetMaterial() { return material; };
+        inline MaterialType GetMaterialType() { return materialType; };
 
-        void Render(Shader *shader);
+        void Render(Shader *shader, const Matrix4 &transform);
     };
 } // namespace Core

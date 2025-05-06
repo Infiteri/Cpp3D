@@ -1,4 +1,5 @@
 #include "Actor.h"
+#include "Base.h"
 #include "Core/Logger.h"
 
 namespace Core
@@ -15,7 +16,31 @@ namespace Core
         components.clear();
     }
 
+    void Actor::_CalculateTransformMatrices()
+    {
+        localMatrix = transform.GetMatrix();
+        globalMatrix = parent ? (localMatrix * parent->GetGlobalMatrix()) : localMatrix;
+    }
+
     void Actor::SetName(const std::string &newName) { name = newName; }
+
+    Actor *Actor::CreateChild(const std::string &name)
+    {
+        Actor *a = new Actor(name);
+        AddChild(a);
+        return a;
+    }
+
+    void Actor::AddChild(Actor *childInstance)
+    {
+        CE_VERIFY(childInstance);
+
+        childInstance->parent = this;
+        children.push_back(childInstance);
+
+        if (state == State::Running || state == State::Started)
+            childInstance->Start();
+    }
 
     void Actor::Start()
     {
@@ -32,6 +57,12 @@ namespace Core
         {
             comp->Start();
         }
+
+        // todo: children vs components, which to init first
+        for (auto child : children)
+        {
+            child->Start();
+        }
     }
 
     void Actor::Update()
@@ -44,9 +75,16 @@ namespace Core
 
         state = State::Running;
 
+        _CalculateTransformMatrices();
+
         for (auto comp : components)
         {
             comp->Update();
+        }
+
+        for (auto child : children)
+        {
+            child->Update();
         }
     }
 
@@ -64,6 +102,11 @@ namespace Core
         {
             comp->Render();
         }
+
+        for (auto child : children)
+        {
+            child->Render();
+        }
     }
 
     void Actor::Stop()
@@ -74,6 +117,11 @@ namespace Core
         for (auto comp : components)
         {
             comp->Stop();
+        }
+
+        for (auto child : children)
+        {
+            child->Stop();
         }
     }
 

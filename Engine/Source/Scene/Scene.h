@@ -4,7 +4,6 @@
 #include "Base.h"
 
 #include <string>
-#include <vector>
 
 namespace Core
 {
@@ -23,11 +22,13 @@ namespace Core
         };
         State state = State::Uninitialzied;
 
-        std::vector<Actor *> actors;
+        ActorList actors;
 
     public:
         Scene();
         ~Scene();
+
+        inline ActorList &GetActors() { return actors; };
 
         void Start();
         void Update();

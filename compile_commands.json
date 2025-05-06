@@ -1,7 +1,7 @@
 [
   {
     "directory": "D:/Ion/Code/NVIMCORE",
-    "command": "clang++ -std=c++20 -Wall -IEngine/Source -IEngine/Vendor/GLFW/include -IEngine/Vendor/glad/include -IEngine/Vendor/ImGui -IEngine/Vendor/stb -DCE_WIN32", 
+    "command": "clang++ -std=c++20 -Wall -IEditor/Source -IEngine/Source -IEngine/Vendor/GLFW/include -IEngine/Vendor/glad/include -IEngine/Vendor/ImGui -IEngine/Vendor/stb -DCE_WIN32", 
     "file": "main.cpp"
   }
 ]

@@ -1,6 +1,8 @@
 #include "Mesh.h"
 #include "Base.h"
+#include "Core/Logger.h"
 #include "Renderer/Geometry/Geometry.h"
+#include "Renderer/Material/Material.h"
 #include "Renderer/Material/MaterialSystem.h"
 
 #include <glad/glad.h>
@@ -71,6 +73,7 @@ namespace Core
         }
 
         material = nullptr;
+        materialType = MaterialType::None;
     }
 
     void Mesh::SetMaterialToDefault()
@@ -102,14 +105,14 @@ namespace Core
         this->geometry = geometry;
     }
 
-    void Mesh::Render(Shader *shader)
+    void Mesh::Render(Shader *shader, const Matrix4 &transform)
     {
         CE_VERIFY(material);
 
         if (!geometryArray)
             BufferGeometryArray();
 
-        shader->Mat4(Matrix4::Translate(Position), "uTransform");
+        shader->Mat4(transform, "uTransform");
 
         material->Use(shader);
 

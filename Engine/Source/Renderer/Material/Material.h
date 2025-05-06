@@ -7,6 +7,16 @@
 
 namespace Core
 {
+    /// @brief Represents the type of material, just the state of the material.
+    /// @note Needed for editing materialss.
+    enum class MaterialType
+    {
+        None = 0,
+        Default,
+        File,
+        Config
+    };
+
     class CE_API Material
     {
     public:
