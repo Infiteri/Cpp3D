@@ -1,6 +1,6 @@
 #pragma once
 
-#define CE_VERION "0.0.4 - 06.05.2025"
+#define CE_VERION "0.0.5 - 12.05.2025"
 
 #define CE_API __declspec(dllexport)
 
@@ -12,3 +12,9 @@ typedef unsigned long long u64;
 #define CE_VERIFY(exp)                                                                             \
     if (!(exp))                                                                                    \
         return;
+
+#ifdef CE_WITH_EDITOR
+#define CE_ED_API __declspec(dllexport)
+#else
+#define CE_ED_API
+#endif

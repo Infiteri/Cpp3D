@@ -1,5 +1,6 @@
 #include "MaterialSystem.h"
 #include "Core/Logger.h"
+#include "Resource/MaterialLoader.h"
 
 namespace Core
 {
@@ -48,7 +49,12 @@ namespace Core
             return &state.Materials[name].Material;
         }
 
-        state.Materials[name] = {1};
+        Material::Configuration con;
+        MaterialLoader loader;
+        loader.Deserialize(name.c_str(), con);
+
+        state.Materials[name] = {1, con};
+
         // todo: load material from filesystem when possible
         return &state.Materials[name].Material;
     }

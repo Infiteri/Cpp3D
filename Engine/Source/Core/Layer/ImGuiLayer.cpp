@@ -117,4 +117,10 @@ namespace Core
         style.TabRounding = 0.0f;
     }
 
+    void ImGuiLayer::SetFont(const std::string &fontFile, float fontSize)
+    {
+        ImGuiIO &io = ImGui::GetIO();
+        (void)io;
+        io.Fonts->AddFontFromFileTTF(fontFile.c_str(), fontSize);
+    }
 } // namespace Core

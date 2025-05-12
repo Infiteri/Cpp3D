@@ -34,3 +34,10 @@
 4. Added camera movement for the editor
 5. Added editor Dockspace and basic UI
 6. Other
+
+1. Added Fonts to editor
+2. Added Editor API to expose editor only features to the Editor
+3. Added Open file dialogs for editing textures within the Editor
+4. Added Scene serialization and deserialization
+5. Added File Materials and all complexities that come along
+6. Added basic Editor camera movement

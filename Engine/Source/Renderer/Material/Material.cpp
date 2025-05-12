@@ -10,6 +10,7 @@ namespace Core
     {
         Name = other.Name;
         Color = other.Color;
+        ColorTexture = other.ColorTexture;
     }
 
     Material::Material() { SetColorTextureDefault(); }
@@ -17,7 +18,9 @@ namespace Core
     Material::Material(const Configuration &config)
     {
         state = config;
-        SetColorTextureDefault();
+
+        config.ColorTexture.empty() ? SetColorTextureDefault()
+                                    : SetColorTexture(config.ColorTexture);
     }
 
     Material::~Material() { ClearTexture(colorTexture); }
@@ -43,6 +46,7 @@ namespace Core
         if (colorTexture.Tex)
             ClearTexture(colorTexture);
 
+        state.Name = "";
         colorTexture.Type = TextureType::Default;
         colorTexture.Tex = TextureSystem::GetDefault();
     }
@@ -58,6 +62,7 @@ namespace Core
             return;
         }
 
+        state.Name = name;
         colorTexture.Type = TextureType::Loaded;
         colorTexture.Tex = TextureSystem::Get(name);
     }

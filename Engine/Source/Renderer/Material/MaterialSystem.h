@@ -17,6 +17,8 @@ namespace Core
 
             MaterialReference() : Count(0) {};
             MaterialReference(const int count) : Count(count) {};
+            MaterialReference(const int count, Material::Configuration &config)
+                : Count(count), Material(config) {};
         };
 
         struct State

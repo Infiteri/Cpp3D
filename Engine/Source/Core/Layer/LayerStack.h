@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base.h"
+#include "Core/Event/Event.h"
 #include "Core/Layer/Layer.h"
 
 namespace Core
@@ -16,6 +17,7 @@ namespace Core
 
         static void Update();
         static void RenderImGui();
+        static void EmitEvent(Event *event);
 
         static void PushLayer(Layer *layer);
         static void PopLayer(Layer *layer);

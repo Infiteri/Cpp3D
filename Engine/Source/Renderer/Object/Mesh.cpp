@@ -103,6 +103,10 @@ namespace Core
         DestroyGeometry();
 
         this->geometry = geometry;
+
+        BufferGeometryArray(); // todo: i dont really like rebuffering on every frame the size
+                               // changes, maybe a 1, 1, 1 geometry and new scale matrix that uses
+                               // the sizes also geometry dependent
     }
 
     void Mesh::Render(Shader *shader, const Matrix4 &transform)

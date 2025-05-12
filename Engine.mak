@@ -5,9 +5,9 @@ OBJ_DIR := Bin-Obj
 ASSEMBLY := Engine
 EXTENSION := .dll
 COMPILER_FLAGS := -g -std=c++2a
-INCLUDE_FLAGS := -IEngine/Source -IEngine/Vendor/GLFW/include -IEngine/Vendor/glad/include -IEngine/Vendor/ImGui -IEngine/Vendor/stb
+INCLUDE_FLAGS := -IEngine/Source -IEngine/Vendor/GLFW/include -IEngine/Vendor/glad/include -IEngine/Vendor/ImGui -IEngine/Vendor/stb -IEngine/Vendor/YAML/include
 DEFINES := -D_DEBUG -DCE_BUILD_DLL -DCE_WITH_EDITOR -DCE_WIN32 
-FLAGS := -g -shared -L$(BUILD_DIR) -lglfw3 -lglad -lImGui
+FLAGS := -g -shared -L$(BUILD_DIR) -lglfw3 -lglad -lImGui -lcomdlg32 -lShlwapi -lYAML
 LINKER_FLAGS := $(FLAGS)
 
 #Recursive wildcard function to get all .cpp files

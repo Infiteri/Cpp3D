@@ -13,6 +13,9 @@ namespace Core
         for (auto comp : components)
             delete comp;
 
+        for (auto child : children)
+            delete child;
+
         components.clear();
     }
 
@@ -39,7 +42,55 @@ namespace Core
         children.push_back(childInstance);
 
         if (state == State::Running || state == State::Started)
-            childInstance->Start();
+            if (childInstance->state != State::Running && childInstance->state != State::Started)
+                childInstance->Start();
+    }
+
+    void Actor::RemoveActor(const UUID &uuid, bool destroyInstance)
+    {
+        int index = 0;
+        for (auto child : children)
+        {
+            if (child->GetID() == uuid)
+            {
+                child->parent = nullptr;
+                if (destroyInstance)
+                    delete child;
+
+                children.erase(children.begin() + index);
+                return;
+            }
+
+            index++;
+        }
+    }
+
+    Actor *Actor::GetActor(const UUID &uuid)
+    {
+        if (id == uuid)
+            return this;
+
+        for (auto c : children)
+            if (c->id == uuid)
+                return c;
+
+        return nullptr;
+    }
+
+    Actor *Actor::GetActorInAllHierarchy(const UUID &uuid)
+    {
+        Actor *a = GetActor(uuid);
+        if (a)
+            return a;
+
+        for (auto *child : children)
+        {
+            Actor *result = child->GetActorInAllHierarchy(uuid);
+            if (result != nullptr)
+                return result;
+        }
+
+        return nullptr;
     }
 
     void Actor::Start()

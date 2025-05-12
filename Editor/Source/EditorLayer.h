@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Event/Event.h"
 #include "Core/Layer/Layer.h"
 #include "Editor/Source/Panel/Panel.h"
 #include "EditorCamera.h"
@@ -40,6 +41,8 @@ namespace Core
 
         void OnAttach();
         void OnDetach();
+
+        void OnEvent(Event *event);
 
         void OnUpdate();
         void OnImGuiRender();

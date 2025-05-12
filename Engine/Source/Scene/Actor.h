@@ -38,6 +38,8 @@ namespace Core
         Matrix4 globalMatrix;
         void _CalculateTransformMatrices();
 
+        friend class SceneSerializer;
+
     public:
         Actor();
         Actor(const std::string &name);
@@ -53,7 +55,12 @@ namespace Core
         Actor *CreateChild(const std::string &name);
         void AddChild(Actor *childInstance);
 
-        inline UUID GetID() { return id; };
+        Actor *GetActor(const UUID &uuid);
+        Actor *GetActorInAllHierarchy(const UUID &uuid);
+
+        void RemoveActor(const UUID &uuid, bool destroyInstance = false);
+
+        inline UUID &GetID() { return id; };
 
         inline std::string GetName() { return name; }
         void SetName(const std::string &newName);

@@ -27,6 +27,11 @@ namespace Core
         return state.Tex2D.find(name) != state.Tex2D.end();
     }
 
+    bool TextureSystem::IsTextureDefault(Texture2D *texture)
+    {
+        return texture == &state.DefaultTexture;
+    }
+
     Texture2D *TextureSystem::GetDefault() { return &state.DefaultTexture; }
 
     Texture2D *TextureSystem::Get(const std::string &name)

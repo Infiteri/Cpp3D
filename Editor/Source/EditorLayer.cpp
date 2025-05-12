@@ -1,11 +1,15 @@
 #include "EditorLayer.h"
 #include "Core/Engine.h"
+#include "Core/Event/Event.h"
 #include "Core/Input.h"
-#include "Core/Logger.h"
+#include "Core/Layer/ImGuiLayer.h"
 #include "Renderer/Camera/CameraSystem.h"
+#include "Renderer/Material/Material.h"
 #include "Renderer/Renderer.h"
+#include "Resource/MaterialLoader.h"
 #include "Scene/Components/Components.h"
 #include "Scene/Scene.h"
+#include "Scene/Serialzier/SceneSerializer.h"
 #include "Scene/World.h"
 
 #include <imgui.h>
@@ -19,19 +23,33 @@ namespace Core
         state.Camera = CameraSystem::GetActivePerspective();
         state.Camera.Sensitivity = 0.005;
 
+        // todo: From some kind of configuration file
+        ImGuiLayer::SetFont("EngineAssets/Font/Open_Sans/static/OpenSans-Bold.ttf", 12);
+
+        // todo: File
         Scene *scene = World::Create("Test");
         World::Activate("Test");
 
+#if 1
         auto test1 = scene->CreateActor("TTV");
-        test1->AddComponent<MeshComponent>();
+        auto mesh = test1->AddComponent<MeshComponent>();
+        mesh->GetMesh()->SetMaterial("Material.ce_mat");
         test1->GetTransform().Position = {3, 3, 0};
 
         auto test2 = test1->CreateChild("TTV2");
         test2->GetTransform().Position = {3, 0, 0};
         test2->AddComponent<MeshComponent>();
+        SceneSerializer serializer{World::GetActive()};
+        serializer.Serialize("Scene.ce_scene");
+#else
+        SceneSerializer serializer{World::GetActive()};
+        serializer.Deserialize("Scene.ce_scene");
+#endif
     }
 
     void EditorLayer::OnDetach() {}
+
+    void EditorLayer::OnEvent(Event *event) {}
 
     void EditorLayer::OnUpdate()
     {

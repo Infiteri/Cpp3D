@@ -1,12 +1,13 @@
 #pragma once
 
+#include "Base.h"
 #include "Texture2D.h"
 #include <string>
 #include <unordered_map>
 
 namespace Core
 {
-    class TextureSystem
+    class CE_ED_API TextureSystem
     {
     public:
         struct Texture2DReference
@@ -33,6 +34,8 @@ namespace Core
         static void Shutdown();
 
         static bool Exists(const std::string &name);
+
+        static bool IsTextureDefault(Texture2D *texture);
 
         static Texture2D *GetDefault();
         static Texture2D *Get(const std::string &name);

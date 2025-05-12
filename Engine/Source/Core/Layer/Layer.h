@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base.h"
+#include "Core/Event/Event.h"
 
 namespace Core
 {
@@ -9,6 +10,8 @@ namespace Core
     public:
         Layer() {};
         virtual ~Layer() {};
+
+        virtual void OnEvent(Event *event) {};
 
         virtual void OnAttach() {};
         virtual void OnUpdate() {};

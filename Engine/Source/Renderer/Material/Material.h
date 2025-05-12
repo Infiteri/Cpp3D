@@ -28,6 +28,9 @@ namespace Core
             /// Default color of the material.
             Color Color;
 
+            /// The color texture to use, leave as empty for the default texture.
+            std::string ColorTexture = "";
+
             Configuration() = default;
             Configuration(const Configuration &other);
         };
@@ -67,5 +70,6 @@ namespace Core
 
         inline Color &GetColor() { return state.Color; };
         inline const std::string &GetName() { return state.Name; };
+        inline Texture2D *GetColorTexture() { return colorTexture.Tex; };
     };
 } // namespace Core

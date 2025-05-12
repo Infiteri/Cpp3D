@@ -37,6 +37,7 @@ namespace Core
 
         inline Material *GetMaterial() { return material; };
         inline MaterialType GetMaterialType() { return materialType; };
+        inline Geometry *GetGeometry() { return geometry; };
 
         void Render(Shader *shader, const Matrix4 &transform);
     };

@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "Core/Event/EventSystem.h"
 #include "Core/Layer/Layer.h"
 #include "Core/Layer/LayerStack.h"
 #include "Core/Logger.h"
@@ -27,6 +28,7 @@ namespace Core
     {
         LayerStack::Init();
         ImGuiLayer::Init();
+        EventSystem::Init();
         Renderer::Init();
 
         World::Init();
@@ -62,6 +64,7 @@ namespace Core
 
     void Engine::Update()
     {
+        EventSystem::Update();
         LayerStack::Update();
         World::UpdateActive();
         state.Window->Update();
@@ -71,6 +74,7 @@ namespace Core
     {
         ImGuiLayer::Shutdown();
         LayerStack::Shutdown();
+        EventSystem::Shutdown();
         World::Shutdown();
         delete state.Window;
     }

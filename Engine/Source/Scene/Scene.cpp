@@ -1,5 +1,6 @@
 #include "Scene.h"
 #include "Core/Logger.h"
+#include <algorithm>
 
 namespace Core
 {
@@ -70,10 +71,76 @@ namespace Core
     Actor *Scene::CreateActor(const std::string &name)
     {
         Actor *a = new Actor(name);
+        AddActor(a);
+        return a;
+    }
+
+    void Scene::AddActor(Actor *a)
+    {
         if (state == State::Started || state == State::Running)
             a->Start();
 
         actors.push_back(a);
+    }
+
+    void Scene::MoveActorInHierarchy(const UUID &uid, int newIndex)
+    {
+        Actor *actorToMove = GetActor(uid);
+
+        if (!actorToMove)
+            return;
+
+        if (newIndex < 0 || newIndex >= actors.size())
+            return;
+        auto actorIterator = std::find(actors.begin(), actors.end(), actorToMove);
+
+        if (actorIterator != actors.end())
+        {
+            actors.erase(actorIterator);
+            actors.insert(actors.begin() + newIndex, actorToMove);
+        }
+    }
+
+    void Scene::RemoveActor(const UUID &uuid, bool destroyInstance)
+    {
+        int index = 0;
+        for (auto a : actors)
+        {
+            if (a->GetID() == uuid)
+            {
+                if (destroyInstance)
+                    delete a;
+
+                actors.erase(actors.begin() + index);
+                return;
+            }
+
+            index++;
+        }
+    }
+
+    Actor *Scene::GetActor(const UUID &uuid)
+    {
+        for (auto a : actors)
+            if (a->GetID() == uuid)
+                return a;
+
+        return nullptr;
+    }
+
+    Actor *Scene::GetActorInAllHierarchy(const UUID &uuid)
+    {
+        Actor *a = GetActor(uuid);
+
+        if (!a)
+        {
+            if (a)
+                return a;
+
+            for (auto c : actors)
+                a = c->GetActorInAllHierarchy(uuid);
+        }
+
         return a;
     }
 

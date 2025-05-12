@@ -1,12 +1,36 @@
 #include "Window.h"
+#include "Core/Event/CeEvents.h"
+#include "Core/Event/Event.h"
+#include "Core/Event/EventSystem.h"
 #include "Core/Input.h"
+#include "Core/Logger.h"
 #include "Renderer/Renderer.h"
 
 #include <GLFW/glfw3.h>
 
 namespace Core
 {
-    static void CallbackViewport(GLFWwindow *handle, int w, int h) { Renderer::Viewport(w, h); }
+    static void CallbackViewport(GLFWwindow *handle, int w, int h)
+    {
+        Renderer::Viewport(w, h);
+
+        EventSystem::Emit<EventResize>(EventType::Resize, -1, w, h);
+    }
+
+    static void CallbackMouseButton(GLFWwindow *window, int button, int action, int mods)
+    {
+        EventSystem::Emit<EventMouseButton>(EventType::MouseButton, -1, (Buttons)button);
+    }
+
+    static void CallbackMouseMove(GLFWwindow *window, double x, double y)
+    {
+        EventSystem::Emit<EventMouseMove>(EventType::MouseMove, -1, (int)x, (int)y);
+    }
+
+    static void CallbackKeyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
+    {
+        EventSystem::Emit<EventKeyboardButton>(EventType::KeyboardButton, -1, (Keys)key);
+    }
 
     Window::Window(const Window::Configuration &config)
     {
@@ -35,8 +59,12 @@ namespace Core
             glfwMaximizeWindow(handle);
 
         glfwSwapInterval((state.VSync ? 1 : 0));
-        // bind events
+
+        // note: bind events, mostly needed for event system
         glfwSetWindowSizeCallback(handle, CallbackViewport);
+        glfwSetMouseButtonCallback(handle, CallbackMouseButton);
+        glfwSetCursorPosCallback(handle, CallbackMouseMove);
+        glfwSetKeyCallback(handle, CallbackKeyboard);
 
         // final setup
         glfwGetWindowPos(handle, &state.X, &state.Y);

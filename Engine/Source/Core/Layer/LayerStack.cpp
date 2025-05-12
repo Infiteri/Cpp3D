@@ -31,6 +31,14 @@ namespace Core
             l->OnImGuiRender();
     }
 
+    void LayerStack::EmitEvent(Event *event)
+    {
+        CE_VERIFY(event);
+
+        for (auto l : layers)
+            l->OnEvent(event);
+    }
+
     void LayerStack::PushLayer(Layer *layer)
     {
         layers.push_back(layer);
