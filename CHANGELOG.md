@@ -35,6 +35,8 @@
 5. Added editor Dockspace and basic UI
 6. Other
 
+# 0.0.5 - 12.05.2025
+
 1. Added Fonts to editor
 2. Added Editor API to expose editor only features to the Editor
 3. Added Open file dialogs for editing textures within the Editor
