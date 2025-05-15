@@ -23,7 +23,7 @@ namespace Core
 
         struct State
         {
-            std::unordered_map<std::string, MaterialReference> Materials;
+            std::unordered_map<std::string, MaterialReference *> Materials;
             Material DefaultMaterial;
         };
 

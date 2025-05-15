@@ -9,10 +9,8 @@ namespace Core
     class CE_API Texture2D : public Texture
     {
     private:
-        Image *imageInstance;
-
+        std::string imageLoadPath = "";
         void EnsureDestructionID();
-        void DestroyImage();
 
     public:
         Texture2D();
@@ -25,12 +23,7 @@ namespace Core
         void Unbind() const;
         void Destroy();
 
-        inline std::string GetImagePath()
-        {
-            if (!imageInstance)
-                return "";
-            return imageInstance->GetName();
-        };
+        inline std::string GetImagePath() { return imageLoadPath; };
 
         void Use() const;
     };

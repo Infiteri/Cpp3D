@@ -71,7 +71,6 @@ namespace Core
         out << YAML::BeginMap;
 
         // Material
-#if 0
         {
             out << YAML::Key << "Material" << YAML::Value << YAML::BeginMap;
             auto mat = mesh->GetMesh()->GetMaterial();
@@ -84,14 +83,11 @@ namespace Core
                 break;
 
             case MaterialType::Config:
-                SerializerUtils::SerializeColor(mat->GetColor(), "Color", out);
-
-                if (mat->GetColorTexture())
-                    MeshSerializeTexture(mat->GetColorTexture(), "ColorTexture", out);
-                else
-                    CE_LOG("CE_SCENE", Error, "Material Color Texture should never be nullptr.");
-
-                break;
+            {
+                MaterialLoader loader;
+                loader.Serialize(out, mesh->GetMesh()->GetMaterial());
+            }
+            break;
 
             case MaterialType::File:
                 CE_SERIALIZE_FIELD("File", mat->GetName().c_str());
@@ -100,13 +96,6 @@ namespace Core
 
             out << YAML::EndMap;
         }
-#else
-        MaterialLoader loader;
-
-        out << YAML::Key << "Material" << YAML::Value << YAML::BeginMap;
-        loader.Serialize(out, mesh->GetMesh()->GetMaterial(), mesh->GetMesh()->GetMaterialType());
-        out << YAML::EndMap;
-#endif
         // Geometry
         {
             out << YAML::Key << "Geometry" << YAML::Key << YAML::BeginMap;
@@ -153,12 +142,19 @@ namespace Core
                 break;
 
             case MaterialType::Config:
+            {
                 // todo: Refactor in a way to allow for the same code to be used for material file
                 // assets
                 Material::Configuration config;
                 MaterialLoader loader;
                 loader.Deserialize(mc, config);
                 c->GetMesh()->SetMaterial(config);
+            }
+            break;
+
+            case MaterialType::File:
+                std::string name = mc["File"].as<std::string>();
+                c->GetMesh()->SetMaterial(name);
                 break;
             }
         }

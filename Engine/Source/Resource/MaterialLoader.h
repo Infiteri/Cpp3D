@@ -14,10 +14,10 @@ namespace Core
         MaterialLoader() {};
         ~MaterialLoader() {};
 
-        void Serialize(const std::string &path, Material *material, MaterialType type);
+        void Serialize(const std::string &path, Material *material);
         void Deserialize(const std::string &path, Material::Configuration &material);
 
-        void Serialize(YAML::Emitter &out, Material *material, MaterialType type);
+        void Serialize(YAML::Emitter &out, Material *material);
         void Deserialize(YAML::Node node, Material::Configuration &material);
     };
 } // namespace Core

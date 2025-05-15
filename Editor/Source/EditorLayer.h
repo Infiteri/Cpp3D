@@ -2,8 +2,8 @@
 
 #include "Core/Event/Event.h"
 #include "Core/Layer/Layer.h"
-#include "Editor/Source/Panel/Panel.h"
 #include "EditorCamera.h"
+#include "Panel/Panel.h"
 #include "imgui.h"
 
 namespace Core

@@ -43,3 +43,11 @@
 4. Added Scene serialization and deserialization
 5. Added File Materials and all complexities that come along
 6. Added basic Editor camera movement
+
+# 0.0.6 - 15.05.2025
+
+1. Added Content Browser Panel
+2. Reworked some Texture2D internal issues related with images
+3. Added a light Filesystem API
+4. Fixed some bad bugs
+5. Added some more functionality to the Content Browser Panel

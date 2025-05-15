@@ -12,7 +12,8 @@ namespace Core
     public:
         struct Texture2DReference
         {
-            Texture2D Texture;
+            Texture2D *Texture; // when stuff doesnt work, make it a pointer, todo: Why did it
+                                // actually break?
             int Count;
 
             Texture2DReference() : Count(0) {};

@@ -24,42 +24,25 @@ namespace Core
             targetPath = node[field]["FilePath"].as<std::string>();
     }
 
-    void MaterialLoader::Serialize(const std::string &path, Material *material, MaterialType type)
+    void MaterialLoader::Serialize(const std::string &path, Material *material)
     {
         YAML::Emitter out;
         out << YAML::BeginMap;
         CE_SERIALIZE_FIELD("Material", "Value");
-        Serialize(out, material, type);
+        Serialize(out, material);
         out << YAML::EndMap;
 
         _SaveEmitter(out, path);
     }
 
-    void MaterialLoader::Serialize(YAML::Emitter &out, Material *material, MaterialType type)
+    void MaterialLoader::Serialize(YAML::Emitter &out, Material *material)
     {
         auto mat = material;
-        CE_SERIALIZE_FIELD("Type", (int)type);
-
-        switch (type)
-        {
-        case MaterialType::Default:
-        default:
-            break;
-
-        case MaterialType::Config:
-            SerializerUtils::SerializeColor(mat->GetColor(), "Color", out);
-
-            if (mat->GetColorTexture())
-                SerializeTexture(mat->GetColorTexture(), "ColorTexture", out);
-            else
-                CE_ERROR("Material Color Texture should never be nullptr.");
-
-            break;
-
-        case MaterialType::File:
-            CE_SERIALIZE_FIELD("File", mat->GetName().c_str());
-            break;
-        }
+        SerializerUtils::SerializeColor(mat->GetColor(), "Color", out);
+        if (mat->GetColorTexture())
+            SerializeTexture(mat->GetColorTexture(), "ColorTexture", out);
+        else
+            CE_ERROR("Material Color Texture should never be nullptr.");
     }
 
     void MaterialLoader::Deserialize(const std::string &path, Material::Configuration &material)

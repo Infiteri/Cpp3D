@@ -30,15 +30,20 @@ namespace Core
         Scene *scene = World::Create("Test");
         World::Activate("Test");
 
-#if 1
+#if 0
+       Material::Configuration c;
+        c.Color = {0, 125, 255, 255};
+        MaterialLoader l;
+        Material m(c);
+        l.Serialize("Material.ce_mat", &m);
+#endif
+
+#if 0
         auto test1 = scene->CreateActor("TTV");
         auto mesh = test1->AddComponent<MeshComponent>();
         mesh->GetMesh()->SetMaterial("Material.ce_mat");
         test1->GetTransform().Position = {3, 3, 0};
 
-        auto test2 = test1->CreateChild("TTV2");
-        test2->GetTransform().Position = {3, 0, 0};
-        test2->AddComponent<MeshComponent>();
         SceneSerializer serializer{World::GetActive()};
         serializer.Serialize("Scene.ce_scene");
 #else

@@ -19,8 +19,11 @@ namespace Core
     {
         state = config;
 
-        config.ColorTexture.empty() ? SetColorTextureDefault()
-                                    : SetColorTexture(config.ColorTexture);
+        colorTexture.Tex = nullptr;
+        SetColorTextureDefault();
+
+        if (!config.ColorTexture.empty())
+            SetColorTexture(config.ColorTexture);
     }
 
     Material::~Material() { ClearTexture(colorTexture); }
@@ -46,7 +49,6 @@ namespace Core
         if (colorTexture.Tex)
             ClearTexture(colorTexture);
 
-        state.Name = "";
         colorTexture.Type = TextureType::Default;
         colorTexture.Tex = TextureSystem::GetDefault();
     }
@@ -62,7 +64,6 @@ namespace Core
             return;
         }
 
-        state.Name = name;
         colorTexture.Type = TextureType::Loaded;
         colorTexture.Tex = TextureSystem::Get(name);
     }
@@ -73,7 +74,6 @@ namespace Core
 
         shader->Vec4(state.Color, "uColor");
 
-        // Due to per instance draw (as bad as it is) generations are really needed
         CE_VERIFY(colorTexture.Tex);
         colorTexture.Tex->Use();
         shader->Int(0, "uColorTexture");

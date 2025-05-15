@@ -8,11 +8,11 @@ namespace Core
 {
     namespace EditorUtils
     {
-
         static char stringBuffer[1024];
 
         bool ImGuiString(const char *label, std::string &str)
         {
+            memset(stringBuffer, 0, 1024); // lol this used to be wrong cus funny
             memcpy(stringBuffer, str.data(), str.size());
             if (ImGui::InputText(label, stringBuffer, 1024))
             {

@@ -2,6 +2,14 @@
 #include "Core/Logger.h"
 #include "Resource/MaterialLoader.h"
 
+#define CE_DEBUG_MATERIAL_SYS 1
+
+#if CE_DEBUG_MATERIAL_SYS == 1
+#define CE_MAT_DBG(msg, ...) CE_LOG("CE_RENDER", Trace, msg, ##__VA_ARGS__)
+#else
+#define CE_MAT_DBG(msg, ...)
+#endif
+
 namespace Core
 {
     static MaterialSystem::State state;
@@ -26,9 +34,12 @@ namespace Core
             return;
         }
 
-        state.Materials[name].Count--;
-        if (state.Materials[name].Count <= 0)
+        state.Materials[name]->Count--;
+        CE_MAT_DBG("Removing material '%s', new count = %i", name.c_str(),
+                   state.Materials[name]->Count);
+        if (state.Materials[name]->Count <= 0)
         {
+            delete state.Materials[name];
             state.Materials.erase(name);
         }
     }
@@ -45,18 +56,21 @@ namespace Core
             CE_LOG("CE_RENDER", Warn,
                    "Cannot Add material '%s' as it already exists, returning existing instance.",
                    name.c_str());
-            state.Materials[name].Count++;
-            return &state.Materials[name].Material;
+            state.Materials[name]->Count++;
+            return &state.Materials[name]->Material;
         }
 
         Material::Configuration con;
         MaterialLoader loader;
         loader.Deserialize(name.c_str(), con);
+        con.Name = name;
 
-        state.Materials[name] = {1, con};
+        state.Materials[name] = new MaterialReference{1, con};
+
+        CE_MAT_DBG("Added material '%s'", name.c_str());
 
         // todo: load material from filesystem when possible
-        return &state.Materials[name].Material;
+        return &state.Materials[name]->Material;
     }
 
     Material *MaterialSystem::Get(const std::string &name)
@@ -64,7 +78,11 @@ namespace Core
         if (!Exists(name))
             return Add(name);
 
-        state.Materials[name].Count++;
-        return &state.Materials[name].Material;
+        state.Materials[name]->Count++;
+
+        CE_MAT_DBG("Getting material '%s', new count = %i", name.c_str(),
+                   state.Materials[name]->Count);
+
+        return &state.Materials[name]->Material;
     }
 } // namespace Core

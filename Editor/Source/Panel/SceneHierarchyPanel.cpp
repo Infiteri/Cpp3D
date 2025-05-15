@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Core/Input.h"
 #include "Core/Logger.h"
+#include "Core/Util/StringUtils.h"
 #include "EditorUtils.h"
 #include "Platform/Platform.h"
 #include "Renderer/Geometry/Geometry.h"
@@ -229,6 +230,23 @@ namespace Core
 
             ImGui::NewLine();
             ImGui::Image((void *)(u64)tex->GetID(), size);
+
+            // note: Here you can accept ImGui drag drop image data
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload *payload =
+                        ImGui::AcceptDragDropPayload("ContentPanelDragDrop"))
+                {
+                    const char *path = (const char *)payload->Data;
+                    std::string ext = StringUtils::GetFilenameExtension(path);
+
+                    // todo: Some hashmap could work
+                    if (ext == "png" || ext == "jpeg" || ext == "jpg")
+                        m->GetMesh()->GetMaterial()->SetColorTexture(path);
+                }
+
+                ImGui::EndDragDropTarget();
+            }
             ImGui::NewLine();
 
             // note: Render texture information
@@ -305,7 +323,10 @@ namespace Core
                     // todo:
                     renderButtonMakeDefault = true;
                     renderButtonMakeConfig = true;
-                    renderButtonMakeFile = false;
+                    renderButtonMakeFile = true;
+
+                    ImGui::Text("Material is file loaded");
+                    ImGui::Text("%s", mesh->GetMaterial()->GetName().c_str());
                     break;
 
                 case MaterialType::None:
@@ -325,12 +346,29 @@ namespace Core
                     mesh->SetMaterial(Material::Configuration());
 
             if (renderButtonMakeFile)
+            {
                 if (ImGui::Button("Load From File"))
                 {
                     std::string path = Platform::OpenFileDialog("Material \0*.ce_mat\0");
                     if (!path.empty())
                         mesh->SetMaterial(path);
                 }
+
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload *payload =
+                            ImGui::AcceptDragDropPayload("ContentPanelDragDrop"))
+                    {
+                        const char *path = (const char *)payload->Data;
+                        std::string ext = StringUtils::GetFilenameExtension(path);
+
+                        if (ext == "ce_mat")
+                            mesh->SetMaterial(path);
+                    }
+
+                    ImGui::EndDragDropTarget();
+                }
+            }
 
             // todo: file
             //

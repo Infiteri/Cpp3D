@@ -14,27 +14,26 @@ namespace Core
         id = 0;
     }
 
-    void Texture2D::DestroyImage()
-    {
-        if (imageInstance)
-            delete imageInstance;
+    // todo: actually make sure it works yk as the image deletion is dangerous
 
-        imageInstance = nullptr;
-    }
-
-    Texture2D::Texture2D() { imageInstance = nullptr; }
+    Texture2D::Texture2D() { imageLoadPath = ""; }
 
     Texture2D::~Texture2D() { Destroy(); }
 
     void Texture2D::Load()
     {
+        imageLoadPath = "";
         EnsureDestructionID();
+
         glGenTextures(1, &id);
     }
 
     void Texture2D::Load(int width, int height, int channels, u8 *data)
     {
-        Load();
+        imageLoadPath = "";
+        EnsureDestructionID();
+
+        glGenTextures(1, &id);
         Bind();
         GLenum format = channels == 3 ? GL_RGB : GL_RGBA;
 
@@ -52,13 +51,13 @@ namespace Core
 
     void Texture2D::Load(const std::string &name)
     {
-        DestroyImage();
+        EnsureDestructionID();
 
-        imageInstance = new Image(name);
-        if (imageInstance->IsValid())
+        Image image = name;
+        if (image.IsValid())
         {
-            Load(imageInstance->GetWidth(), imageInstance->GetHeight(),
-                 imageInstance->GetChannels(), imageInstance->GetData());
+            Load(image.GetWidth(), image.GetHeight(), image.GetChannels(), image.GetData());
+            imageLoadPath = name;
         }
         else
         {

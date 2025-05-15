@@ -1,6 +1,14 @@
 #include "TextureSystem.h"
 #include "Core/Logger.h"
 
+#define CE_DEBUG_TEXTURE_SYS 1
+
+#if CE_DEBUG_TEXTURE_SYS == 1
+#define CE_TEX_DBG(msg, ...) CE_LOG("CE_RENDER", Trace, msg, ##__VA_ARGS__)
+#else
+#define CE_TEX_DBG(msg, ...)
+#endif
+
 namespace Core
 {
     static TextureSystem::State state;
@@ -19,6 +27,8 @@ namespace Core
             if (ref.second.Count > 0)
                 CE_LOG("CE_RENDER", Warn,
                        "Texture reference count greater than zero, should have been removed.");
+
+            delete ref.second.Texture;
         }
     }
 
@@ -40,7 +50,8 @@ namespace Core
             return Load(name);
 
         state.Tex2D[name].Count++;
-        return &state.Tex2D[name].Texture;
+        CE_TEX_DBG("Getting texture: '%s', new count = %i", name.c_str(), state.Tex2D[name].Count);
+        return state.Tex2D[name].Texture;
     }
 
     Texture2D *TextureSystem::Load(const std::string &name)
@@ -52,9 +63,12 @@ namespace Core
             return Get(name);
         }
 
-        state.Tex2D[name] = {0};
-        state.Tex2D[name].Texture.Load(name);
-        return Get(name);
+        state.Tex2D[name] = {1};
+        state.Tex2D[name].Texture = new Texture2D;
+        state.Tex2D[name].Texture->Load(name);
+        CE_TEX_DBG("Loaded texture: '%s'", name.c_str());
+
+        return state.Tex2D[name].Texture;
     }
 
     void TextureSystem::Remove(const std::string &name)
@@ -63,8 +77,11 @@ namespace Core
             return;
 
         state.Tex2D[name].Count--;
+        CE_TEX_DBG("Removing texture: '%s', new count = %i", name.c_str(), state.Tex2D[name].Count);
         if (state.Tex2D[name].Count <= 0)
+        {
+            delete state.Tex2D[name].Texture;
             state.Tex2D.erase(name);
+        }
     }
-
 } // namespace Core

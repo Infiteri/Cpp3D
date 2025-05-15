@@ -1,4 +1,5 @@
 #include "Shader.h"
+#include "Core/FileSystem/FileSystem.h"
 #include "Core/Logger.h"
 
 #include <fstream>
@@ -6,25 +7,6 @@
 
 namespace Core
 {
-    // todo: move somewhere
-    static std::string ReadFile(const std::string &name)
-    {
-        std::ifstream file(name, std::ios::in | std::ios::binary);
-        if (!file.is_open())
-        {
-            return std::string("");
-        }
-
-        std::string content;
-        file.seekg(0, std::ios::end);
-        content.resize(file.tellg());
-        file.seekg(0, std::ios::beg);
-        file.read(&content[0], content.size());
-        file.close();
-
-        return content;
-    }
-
     static u32 LoadShader(const char *src, u32 type)
     {
         u32 shader = glCreateShader(type);
@@ -57,7 +39,7 @@ namespace Core
         if (filename.empty())
             return -1;
 
-        std::string fileContent = ReadFile(filename);
+        std::string fileContent = FileSystem::ReadFile(filename);
         if (fileContent.empty())
             return -2;
 
@@ -125,7 +107,7 @@ namespace Core
 
         id = 0;
         std::string vertexSource, fragmentSource;
-         int composeResult = ShaderComposeSources(filename, vertexSource, fragmentSource);
+        int composeResult = ShaderComposeSources(filename, vertexSource, fragmentSource);
 
         if (composeResult != 0)
         {

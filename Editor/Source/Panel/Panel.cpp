@@ -1,9 +1,14 @@
 #include "Panel.h"
-#include "Editor/Source/Panel/SceneHierarchyPanel.h"
+#include "SceneHierarchyPanel.h"
+#include "Panel/ContentBrowserPanel.h"
 
 namespace Core
 {
-    PanelSystem::PanelSystem() { Panels.push_back(new SceneHierarchyPanel()); }
+    PanelSystem::PanelSystem()
+    {
+        Panels.push_back(new SceneHierarchyPanel());
+        Panels.push_back(new ContentBrowserPanel());
+    }
 
     PanelSystem::~PanelSystem()
     {

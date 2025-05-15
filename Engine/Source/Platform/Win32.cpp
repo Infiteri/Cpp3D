@@ -112,6 +112,77 @@ namespace Core
         return "";
     }
 
+    std::vector<std::string> Platform::GetFilePathsInDirectory(const std::string &directoryPath)
+    {
+        std::vector<std::string> filePaths;
+
+        WIN32_FIND_DATA findData;
+        HANDLE hFind = FindFirstFile((directoryPath + "/*").c_str(), &findData);
+
+        if (hFind == INVALID_HANDLE_VALUE)
+            return filePaths;
+
+        do
+        {
+            if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+                filePaths.push_back(directoryPath + "/" + findData.cFileName);
+        } while (FindNextFile(hFind, &findData));
+
+        FindClose(hFind);
+
+        return filePaths;
+    }
+
+    std::vector<std::string> Platform::GetFolderPathsInDirectory(const std::string &directoryPath)
+    {
+        std::vector<std::string> folderNames;
+
+        WIN32_FIND_DATA findData;
+        HANDLE hFind = FindFirstFile((directoryPath + "/*").c_str(), &findData);
+
+        if (hFind == INVALID_HANDLE_VALUE)
+            return folderNames;
+
+        do
+        {
+            if (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+            {
+                std::string folderName = findData.cFileName;
+                if (folderName != "." && folderName != "..")
+                    folderNames.push_back(folderName);
+            }
+        } while (FindNextFile(hFind, &findData));
+
+        FindClose(hFind);
+
+        return folderNames;
+    }
+
+    std::vector<DirectoryEntry> Platform::GetDirectoryEntries(const std::string &directoryPath)
+    {
+        std::vector<DirectoryEntry> paths;
+        std::vector<std::string> filePaths = GetFilePathsInDirectory(directoryPath);
+        std::vector<std::string> folderPaths = GetFolderPathsInDirectory(directoryPath);
+
+        for (std::string fP : folderPaths)
+        {
+            DirectoryEntry p;
+            p.Name = fP;
+            p.IsFolder = true;
+            paths.emplace_back(p);
+        }
+
+        for (std::string fP : filePaths)
+        {
+            DirectoryEntry p;
+            p.Name = fP;
+            p.IsFolder = false;
+            paths.emplace_back(p);
+        }
+
+        return paths;
+    }
+
 } // namespace Core
 
 #endif
