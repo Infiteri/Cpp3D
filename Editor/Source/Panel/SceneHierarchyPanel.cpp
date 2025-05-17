@@ -190,6 +190,8 @@ namespace Core
     }
 
     void RenderMeshUI(MeshComponent *m, Actor *a);
+    void RenderPointLightUI(PointLightComponent *c, Actor *a);
+    void RenderSpotLightUI(SpotLightComponent *c, Actor *a);
 
     void SceneHierarchyPanel::RenderActorComponents(Actor *a)
     {
@@ -206,6 +208,8 @@ namespace Core
         EditorUtils::ImGuiTransformEdit(a->GetTransform());
 
         CE_RENDER_COMP("Mesh Component", MeshComponent, RenderMeshUI);
+        CE_RENDER_COMP("Point Light Component", PointLightComponent, RenderPointLightUI);
+        CE_RENDER_COMP("Spot Light Component", SpotLightComponent, RenderSpotLightUI);
 
         ImGui::NewLine();
 
@@ -215,6 +219,8 @@ namespace Core
         if (ImGui::BeginPopup("AddComponentPopup"))
         {
             CE_ADD_COMP_RENDER("Mesh Component", MeshComponent);
+            CE_ADD_COMP_RENDER("Point Light Component", PointLightComponent);
+            CE_ADD_COMP_RENDER("Spot Light Component", SpotLightComponent);
 
             ImGui::EndPopup();
         }
@@ -401,4 +407,33 @@ namespace Core
         }
     }
 
+    void RenderPointLightUI(PointLightComponent *c, Actor *a)
+    {
+        auto pl = &c->Light;
+
+        EditorUtils::ImGuiColor("Color", pl->Color);
+        EditorUtils::ImGuiVector3("Specular", pl->Specular);
+        ImGui::DragFloat("Constant", &pl->Constant, 0.02, 0.0f);
+        ImGui::DragFloat("Linear", &pl->Linear, 0.02, 0.0f);
+        ImGui::DragFloat("Quadratic", &pl->Quadratic, 0.02, 0.0f);
+        ImGui::DragFloat("Radius", &pl->Radius, 0.02, 0.0f);
+        ImGui::DragFloat("Intensity", &pl->Intensity, 0.02, 0.0f);
+    }
+
+    void RenderSpotLightUI(SpotLightComponent *c, Actor *a)
+    {
+
+        auto pl = &c->Light;
+
+        EditorUtils::ImGuiColor("Color", pl->Color);
+        EditorUtils::ImGuiVector3("Specular", pl->Specular);
+        EditorUtils::ImGuiVector3("Diffuse", pl->Diffuse);
+        EditorUtils::ImGuiVector3("Direction", pl->Direction);
+        EditorUtils::ImGuiVector3("Position", pl->Position);
+        ImGui::DragFloat("Constant", &pl->Constant, 0.02, 0.0f);
+        ImGui::DragFloat("Linear", &pl->Linear, 0.02, 0.0f);
+        ImGui::DragFloat("Quadratic", &pl->Quadratic, 0.02, 0.0f);
+        ImGui::DragFloat("Cut off", &pl->CutOff, 0.02, 0.0f);
+        ImGui::DragFloat("Outer cut off", &pl->OuterCutOff, 0.02, 0.0f);
+    }
 } // namespace Core

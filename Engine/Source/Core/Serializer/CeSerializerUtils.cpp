@@ -39,5 +39,21 @@ namespace Core
 
             return c;
         }
+
+        Vector3 DeserializeVector3(YAML::Node node)
+        {
+            Vector3 v;
+
+            if (node[0])
+                v.x = node[0].as<float>();
+
+            if (node[1])
+                v.y = node[1].as<float>();
+
+            if (node[2])
+                v.z = node[2].as<float>();
+
+            return v;
+        }
     } // namespace SerializerUtils
 } // namespace Core

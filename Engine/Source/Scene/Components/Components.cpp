@@ -31,4 +31,15 @@ namespace Core
         // todo:
     }
 
+    void PointLightComponent::Render()
+    {
+        Light.Position = owner->GetTransform().Position;
+        Light.Render(ShaderSystem::GetEngineResource("Object.glsl"));
+    }
+
+    void SpotLightComponent::Render()
+    {
+        Light.Position = owner->GetTransform().Position;
+        Light.Render(ShaderSystem::GetEngineResource("Object.glsl"));
+    }
 } // namespace Core

@@ -1,16 +1,17 @@
 #include "Renderer.h"
+#include "Camera/PerspectiveCamera.h"
 #include "Core/Engine.h"
 #include "Core/Logger.h"
 #include "Renderer/Buffer/FrameBuffer.h"
 #include "Renderer/Buffer/VertexArray.h"
 #include "Renderer/Camera/CameraSystem.h"
+#include "Renderer/Light/DirectionalLight.h"
+#include "Renderer/Light/Light.h"
+#include "Renderer/Light/PointLight.h"
+#include "Renderer/Light/SpotLight.h"
 #include "Renderer/Material/MaterialSystem.h"
-#include "Renderer/Object/Mesh.h"
 #include "Renderer/Shader/Shader.h"
 #include "Renderer/Shader/ShaderSystem.h"
-
-#include "Camera/PerspectiveCamera.h"
-#include "Renderer/Texture/Texture2D.h"
 #include "Renderer/Texture/TextureSystem.h"
 
 #include <GLFW/glfw3.h>
@@ -20,6 +21,7 @@ namespace Core
 {
     static Renderer::State state;
     static Color BG{125, 125, 125, 255};
+    static DirectionalLight light;
 
     // easier to keep track of what gets started and gets shutdown
     static void InitializeRendererSubsystems()
@@ -72,6 +74,8 @@ namespace Core
         CameraSystem::GetActivePerspective()->SetPosition({0, 0, 5});
 
         glEnable(GL_MULTISAMPLE);
+
+        light.Direction = {-1, 0, -1};
     }
 
     void Renderer::Shutdown()
@@ -105,6 +109,8 @@ namespace Core
     {
         CE_VERIFY(state.HasContext);
 
+        LightIDManager::BeginFrame();
+
         state.Screen.Begin();
 
         glEnable(GL_BLEND);
@@ -120,10 +126,13 @@ namespace Core
 
         auto shhd = ShaderSystem::GetEngineResource("Object.glsl");
         auto camera = CameraSystem::GetActivePerspective();
+        light.Render(shhd);
 
         shhd->Use();
-        shhd->Mat4(camera->GetProjection(), "uProjection");
-        shhd->Mat4(camera->GetInvertedView(), "uView");
+        UploadCameraToShader(shhd, camera);
+
+        shhd->Int(LightIDManager::PointGetLastFrameCount(), "uPointLightCount");
+        shhd->Int(LightIDManager::SpotGetLastFrameCount(), "uSpotLightCount");
     }
 
     void Renderer::EndFrame()
@@ -142,6 +151,16 @@ namespace Core
 
         state.Screen.Array->GetVertexBuffer()->Bind();
         state.Screen.Array->GetVertexBuffer()->Draw();
+    }
+
+    void Renderer::UploadCameraToShader(Shader *shader, PerspectiveCamera *camera)
+    {
+        CE_VERIFY(shader && camera);
+
+        shader->Use();
+        shader->Mat4(camera->GetProjection(), "uProjection");
+        shader->Mat4(camera->GetInvertedView(), "uView");
+        shader->Vec3(camera->GetPosition(), "uCameraPosition");
     }
 
     u32 Renderer::GetSceneViewportPassID() { return state.Screen.Buffer->GetRenderPass(0)->Id; }

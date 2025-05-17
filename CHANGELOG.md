@@ -51,3 +51,10 @@
 3. Added a light Filesystem API
 4. Fixed some bad bugs
 5. Added some more functionality to the Content Browser Panel
+
+# 0.0.7 - 17.05.2025
+
+1. Added Point lights
+2. Added Spot lights
+3. Added Light components
+3. Added serialization/deserialization to lights

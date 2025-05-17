@@ -90,6 +90,12 @@ namespace Core
             ImGui::ColorEdit4(name, (float *)&colors[i]);
         }
 
+        if (ImGui::Button("Save"))
+        {
+            SceneSerializer serializer{World::GetActive()};
+            serializer.Serialize("Scene.ce_scene");
+        }
+
         ImGui::End();
         DockspaceEnd();
     }

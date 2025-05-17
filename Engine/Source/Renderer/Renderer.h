@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Base.h"
+#include "Renderer/Camera/PerspectiveCamera.h"
 #include "Renderer/GPUScreen.h"
-#include "Renderer/Object/Mesh.h"
 
 namespace Core
 {
@@ -41,6 +41,8 @@ namespace Core
         static void BeginFrame();
         static void Render();
         static void EndFrame();
+
+        static void UploadCameraToShader(Shader *shader, PerspectiveCamera *camera);
 
         static CE_API u32 GetSceneViewportPassID();
     };

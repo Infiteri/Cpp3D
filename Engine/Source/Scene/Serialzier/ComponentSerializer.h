@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Base.h"
 #include "Core/Serializer/CeSerializer.h"
 #include "Scene/Actor.h"
 #include "Scene/Components/Components.h"
@@ -24,6 +23,8 @@ namespace Core
         struct ComponentCount
         {
             int Mesh = 0;
+            int PointLight = 0;
+            int SpotLight = 0;
         };
         ComponentCount count;
 
@@ -31,6 +32,12 @@ namespace Core
 
         void _SerializeMeshComponent(MeshComponent *mesh, int index, YAML::Emitter &out);
         void _DeserializeMeshComponent(YAML::Node node);
+
+        void _SerializePointLightComponent(PointLightComponent *c, int index, YAML::Emitter &out);
+        void _DeserializePointLightComponent(YAML::Node node);
+
+        void _SerializeSpotLightComponent(SpotLightComponent *c, int index, YAML::Emitter &out);
+        void _DeserializeSpotLightComponent(YAML::Node node);
 
     public:
         ComponentSerializer(Actor *target);

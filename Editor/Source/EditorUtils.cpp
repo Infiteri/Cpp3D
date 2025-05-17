@@ -38,6 +38,17 @@ namespace Core
             return false;
         }
 
+        void ImGuiVector3(const char *label, Vector3 &vec)
+        {
+            float data[3] = {vec.x, vec.y, vec.z};
+            if (ImGui::DragFloat3(label, data, 0.05))
+            {
+                vec.x = data[0];
+                vec.y = data[1];
+                vec.z = data[2];
+            }
+        }
+
         void ImGuiVector3Styled(const char *label, Vector3 &vec, float defaultValue)
         {
             ImGui::PushID(label);

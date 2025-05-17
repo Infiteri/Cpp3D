@@ -10,6 +10,7 @@ namespace Core
     {
         Vector3 Position;
         Vector2 UV;
+        Vector3 Normal;
     };
 
     class Geometry

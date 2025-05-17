@@ -34,13 +34,6 @@ namespace Core
             return 0;
     };
 
-    static void MeshSerializeTexture(Texture2D *tex, const char *field, YAML::Emitter &out)
-    {
-        out << YAML::Key << field << YAML::Value << YAML::BeginMap;
-        CE_SERIALIZE_FIELD("FilePath", tex->GetImagePath().c_str());
-        out << YAML::EndMap;
-    }
-
     ComponentSerializer::ComponentSerializer(Actor *target) { actor = target; }
 
     void ComponentSerializer::Serialize(YAML::Emitter &out)
@@ -55,13 +48,19 @@ namespace Core
 
         // Serialize each component
         CE_SERIALIZE_COMPONENT_CALLBACK(Mesh);
+        CE_SERIALIZE_COMPONENT_CALLBACK(PointLight);
+        CE_SERIALIZE_COMPONENT_CALLBACK(SpotLight);
     }
 
     void ComponentSerializer::_SerialzieComponentCount(YAML::Emitter &out)
     {
         CE_GET_COMPONENT_COUNT(Mesh);
+        CE_GET_COMPONENT_COUNT(PointLight);
+        CE_GET_COMPONENT_COUNT(SpotLight);
 
         CE_SERIALIZE_FIELD("MeshComponentCount", count.Mesh);
+        CE_SERIALIZE_FIELD("PointLightComponentCount", count.PointLight);
+        CE_SERIALIZE_FIELD("SpotLightComponentCount", count.SpotLight);
     }
 
     void ComponentSerializer::_SerializeMeshComponent(MeshComponent *mesh, int index,
@@ -122,9 +121,49 @@ namespace Core
         out << YAML::EndMap;
     }
 
+    void ComponentSerializer::_SerializePointLightComponent(PointLightComponent *c, int index,
+                                                            YAML::Emitter &out)
+    {
+        out << YAML::Key << "PointLightComponent " + std::to_string(index);
+        out << YAML::BeginMap;
+
+        SerializerUtils::SerializeVector3(c->Light.Specular, "Specular", out);
+        SerializerUtils::SerializeColor(c->Light.Color, "Color", out);
+
+        CE_SERIALIZE_FIELD("Constant", c->Light.Constant);
+        CE_SERIALIZE_FIELD("Linear", c->Light.Linear);
+        CE_SERIALIZE_FIELD("Quadratic", c->Light.Quadratic);
+        CE_SERIALIZE_FIELD("Intensity", c->Light.Intensity);
+        CE_SERIALIZE_FIELD("Radius", c->Light.Radius);
+
+        out << YAML::EndMap;
+    }
+
+    void ComponentSerializer::_SerializeSpotLightComponent(SpotLightComponent *c, int index,
+                                                           YAML::Emitter &out)
+    {
+        out << YAML::Key << "SpotLightComponent " + std::to_string(index);
+        out << YAML::BeginMap;
+
+        SerializerUtils::SerializeVector3(c->Light.Specular, "Specular", out);
+        SerializerUtils::SerializeVector3(c->Light.Diffuse, "Diffuse", out);
+        SerializerUtils::SerializeVector3(c->Light.Direction, "Direction", out);
+        SerializerUtils::SerializeColor(c->Light.Color, "Color", out);
+
+        CE_SERIALIZE_FIELD("Constant", c->Light.Constant);
+        CE_SERIALIZE_FIELD("Linear", c->Light.Linear);
+        CE_SERIALIZE_FIELD("Quadratic", c->Light.Quadratic);
+        CE_SERIALIZE_FIELD("CutOff", c->Light.CutOff);
+        CE_SERIALIZE_FIELD("OuterCutOff", c->Light.OuterCutOff);
+
+        out << YAML::EndMap;
+    }
+
     void ComponentSerializer::Deserialize(YAML::Node &node)
     {
         CE_DESERIALIZE_COMPONENT("MeshComponent", _DeserializeMeshComponent);
+        CE_DESERIALIZE_COMPONENT("PointLightComponent", _DeserializePointLightComponent);
+        CE_DESERIALIZE_COMPONENT("SpotLightComponent", _DeserializeSpotLightComponent);
     }
 
     void ComponentSerializer::_DeserializeMeshComponent(YAML::Node node)
@@ -181,4 +220,33 @@ namespace Core
         }
     }
 
+    void ComponentSerializer::_DeserializePointLightComponent(YAML::Node node)
+    {
+        auto pl = &actor->AddComponent<PointLightComponent>()->Light;
+
+        pl->Color = SerializerUtils::DeserializeColor(node["Color"]);
+        pl->Specular = SerializerUtils::DeserializeVector3(node["Specular"]);
+
+        pl->Constant = node["Constant"].as<float>();
+        pl->Linear = node["Linear"].as<float>();
+        pl->Quadratic = node["Quadratic"].as<float>();
+        pl->Radius = node["Radius"].as<float>();
+        pl->Intensity = node["Intensity"].as<float>();
+    }
+
+    void ComponentSerializer::_DeserializeSpotLightComponent(YAML::Node node)
+    {
+        auto pl = &actor->AddComponent<SpotLightComponent>()->Light;
+
+        pl->Color = SerializerUtils::DeserializeColor(node["Color"]);
+        pl->Specular = SerializerUtils::DeserializeVector3(node["Specular"]);
+        pl->Diffuse = SerializerUtils::DeserializeVector3(node["Diffuse"]);
+        pl->Direction = SerializerUtils::DeserializeVector3(node["Direction"]);
+
+        pl->Constant = node["Constant"].as<float>();
+        pl->Linear = node["Linear"].as<float>();
+        pl->Quadratic = node["Quadratic"].as<float>();
+        pl->CutOff = node["CutOff"].as<float>();
+        pl->OuterCutOff = node["OuterCutOff"].as<float>();
+    }
 } // namespace Core

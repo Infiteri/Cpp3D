@@ -17,6 +17,7 @@ namespace Core
         CE_API void SerializeVector3(const Vector3 &vec, const char *field, YAML::Emitter &em);
         CE_API void SerializeColor(const Color &vec, const char *field, YAML::Emitter &em);
 
+        CE_API Vector3 DeserializeVector3(YAML::Node node);
         CE_API Color DeserializeColor(YAML::Node node);
     } // namespace SerializerUtils
 } // namespace Core

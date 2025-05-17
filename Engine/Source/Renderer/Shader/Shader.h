@@ -2,6 +2,7 @@
 
 #include "Base.h"
 #include "Math/Matrix.h"
+#include "Math/Vector.h"
 #include "Renderer/Color.h"
 #include <string>
 
@@ -25,8 +26,14 @@ namespace Core
         void Load(const std::string &filename);
 
         void Vec4(const Color &color, const char *name);
+
+        void Vec3(const Vector3 &vec, const char *name);
+
         void Mat4(const Matrix4 &matrix, const char *name);
+
         void Int(int i, const char *name);
+
+        void Float(float f, const char *name);
 
         void Use();
         void Destroy();

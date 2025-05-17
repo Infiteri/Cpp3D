@@ -122,16 +122,36 @@ namespace Core
 
     void Shader::Vec4(const Color &color, const char *name)
     {
+        GLint location = GetUniLoc(name);
+        if (location == -1)
+        {
+            CE_WARN("Shader uniform '%s' not found or optimized out.", name);
+            return;
+        }
+
         Color normal = color.Normalized();
-        glUniform4f(GetUniLoc(name), normal.r, normal.g, normal.b, normal.a);
+        glUniform4f(location, normal.r, normal.g, normal.b, normal.a);
     }
 
+    void Shader::Vec3(const Vector3 &vec, const char *name)
+    {
+        GLint location = GetUniLoc(name);
+        if (location == -1)
+        {
+            CE_WARN("Shader uniform '%s' not found or optimized out.", name);
+            return;
+        }
+
+        glUniform3f(location, vec.x, vec.y, vec.z);
+    }
     void Shader::Mat4(const Matrix4 &matrix, const char *name)
     {
         glUniformMatrix4fv(GetUniLoc(name), 1, false, matrix.data);
     }
 
     void Shader::Int(int i, const char *name) { glUniform1i(GetUniLoc(name), i); }
+
+    void Shader::Float(float f, const char *name) { glUniform1f(GetUniLoc(name), f); }
 
     void Shader::Use() { glUseProgram(id); }
 

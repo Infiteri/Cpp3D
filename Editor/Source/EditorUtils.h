@@ -13,6 +13,7 @@ namespace Core
     {
         bool ImGuiString(const char *label, std::string &str);
         bool ImGuiColor(const char *label, Color &color);
+        void ImGuiVector3(const char *label, Vector3 &vec);
         void ImGuiVector3Styled(const char *label, Vector3 &vec, float defaultValue = 0.0f);
         void ImGuiTransformEdit(Transform &transform);
 

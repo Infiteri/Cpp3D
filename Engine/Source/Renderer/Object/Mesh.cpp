@@ -42,6 +42,7 @@ namespace Core
                                             geometry->Vertices.size() * sizeof(Vertex3D));
         geometryArray->GetVertexBuffer()->AddLayout(0, 0, 3);
         geometryArray->GetVertexBuffer()->AddLayout(1, 3, 2);
+        geometryArray->GetVertexBuffer()->AddLayout(2, 5, 3);
         geometryArray->GenerateIndexBuffer(geometry->Indices.data(),
                                            geometry->Indices.size() * sizeof(u32));
     }
