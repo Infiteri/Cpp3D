@@ -1,5 +1,6 @@
 #include "Scene.h"
 #include "Core/Logger.h"
+#include "Renderer/Renderer.h"
 #include <algorithm>
 
 namespace Core
@@ -23,6 +24,11 @@ namespace Core
         {
             ac->Start();
         }
+
+        environment.Sky.SetSkyboxMode("Cubemap.ce_cubemap");
+
+        Renderer::SetDirectioanlLightInstance(&environment.Light);
+        Renderer::SetSkyInstance(&environment.Sky);
     }
 
     void Scene::Update()

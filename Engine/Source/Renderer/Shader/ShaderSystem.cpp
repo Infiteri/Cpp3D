@@ -10,6 +10,7 @@ namespace Core
         // todo: better loading of engine resources? autoloading
         GetEngineResource("Object.glsl");
         GetEngineResource("Screen.glsl");
+        GetEngineResource("Cubemap.glsl");
     }
 
     void ShaderSystem::Shutdown() { state.shaders.clear(); }

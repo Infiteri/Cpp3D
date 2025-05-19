@@ -39,7 +39,7 @@ namespace Core
         glfwInit();
         glfwWindowHint(GLFW_VISIBLE, false);
         glfwWindowHint(GLFW_DECORATED, state.Decorated);
-        glfwWindowHint(GLFW_SAMPLES, 4);
+        glfwWindowHint(GLFW_SAMPLES, 16);
 
         GLFWmonitor *targetMonitor = NULL;
         if (state.Size == FullScreen)

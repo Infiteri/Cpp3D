@@ -2,6 +2,7 @@
 
 #include "Panel.h"
 #include "Renderer/Material/Material.h"
+#include "Renderer/Texture/CubemapTexture.h"
 #include "Renderer/Texture/Texture2D.h"
 #include <string>
 
@@ -22,10 +23,21 @@ namespace Core
         {
             Material::Configuration Config;
             Texture2D *Texture = nullptr;
+            Texture2D *NormalTexture = nullptr;
             bool Active = false;
             std::string File;
             std::string TargetFolder;
             void Render();
+        };
+
+        struct CreateCubemapPopup
+        {
+            bool Active = false;
+            void Render();
+            std::string File;
+            std::string TargetFolder;
+
+            CubemapConfiguration Config;
         };
 
         struct RightClikedEntry
@@ -47,6 +59,7 @@ namespace Core
 
             CreateFilePopup CreateFile;
             CreateMaterialPopup CreateMaterial;
+            CreateCubemapPopup CreateCubemap;
             RightClikedEntry RightClickEntry;
         };
 

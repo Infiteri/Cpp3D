@@ -72,9 +72,9 @@ namespace Core
 
     void Texture2D::Destroy() { EnsureDestructionID(); }
 
-    void Texture2D::Use() const
+    void Texture2D::Use(int index) const
     {
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE0 + index);
         Bind();
     }
 

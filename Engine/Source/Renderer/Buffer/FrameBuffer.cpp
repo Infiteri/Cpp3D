@@ -46,6 +46,8 @@ namespace Core
         for (u64 i = 0; i < state.Passes.size(); i++)
         {
             RenderPass *pass = &state.Passes[i];
+            pass->Index = i;
+
             if (pass->Type == Depth)
             {
                 glGenRenderbuffers(1, &pass->Id);
@@ -54,7 +56,6 @@ namespace Core
                                       state.Height);
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT,
                                           GL_RENDERBUFFER, pass->Id);
-                pass->Index = i;
             }
             else
             {
@@ -69,13 +70,34 @@ namespace Core
                 glBindTexture(GL_TEXTURE_2D, 0);
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D,
                                        pass->Id, 0);
-                pass->Index = i;
             }
         }
         Unbind();
     }
 
-    void FrameBuffer::PrepareForResize()
+    void FrameBuffer::PrepareForResize() { Destroy(); }
+
+    void FrameBuffer::Resize(int w, int h)
+    {
+        if (w == state.Width && h == state.Height)
+            return;
+
+        PrepareForResize();
+
+        state.Width = w;
+        state.Height = h;
+
+        Create();
+    }
+
+    FrameBuffer::RenderPass *FrameBuffer::GetRenderPass(int index)
+    {
+        if (index >= 0 && index < state.Passes.size())
+            return &state.Passes[index];
+        return nullptr;
+    }
+
+    void FrameBuffer::Destroy()
     {
         glDeleteFramebuffers(1, &id);
         id = 0;
@@ -90,29 +112,6 @@ namespace Core
             pass.Id = 0;
             pass.Index = 0;
         }
-    }
-
-    void FrameBuffer::Resize(int w, int h)
-    {
-        PrepareForResize();
-
-        state.Width = w;
-        state.Height = h;
-
-        Create();
-    }
-
-    FrameBuffer::RenderPass *FrameBuffer::GetRenderPass(int index)
-    {
-        if (state.Passes.size() >= index)
-            return &state.Passes[index];
-        return nullptr;
-    }
-
-    void FrameBuffer::Destroy()
-    {
-        glDeleteFramebuffers(1, &id);
-        id = 0;
     }
 
 } // namespace Core

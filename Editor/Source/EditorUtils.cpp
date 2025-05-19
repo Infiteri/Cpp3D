@@ -49,6 +49,17 @@ namespace Core
             }
         }
 
+        bool StringIsImageExtension(const std::string &ext)
+        {
+            if (ext == "png")
+                return true;
+            if (ext == "jpg")
+                return true;
+            if (ext == "jpeg")
+                return true;
+            return false;
+        }
+
         void ImGuiVector3Styled(const char *label, Vector3 &vec, float defaultValue)
         {
             ImGui::PushID(label);

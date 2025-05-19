@@ -3,16 +3,18 @@
 #include "Core/Event/Event.h"
 #include "Core/Input.h"
 #include "Core/Layer/ImGuiLayer.h"
+#include "Core/Logger.h"
+#include "EditorSettings.h"
 #include "Renderer/Camera/CameraSystem.h"
-#include "Renderer/Material/Material.h"
 #include "Renderer/Renderer.h"
-#include "Resource/MaterialLoader.h"
-#include "Scene/Components/Components.h"
 #include "Scene/Scene.h"
 #include "Scene/Serialzier/SceneSerializer.h"
 #include "Scene/World.h"
 
 #include <imgui.h>
+
+#define CE_DEFINE_COLOR_EDITABLE(name, color) state.Settings.Theme.Colors.push_back({name, color})
+#define CE_SETTINGS_PATH "EditorSettings.ce_settings"
 
 namespace Core
 {
@@ -20,11 +22,40 @@ namespace Core
 
     void EditorLayer::OnAttach()
     {
+        CE_DEFINE_LOG_CATEGORY("CE_EDITOR", "Editor");
+
         state.Camera = CameraSystem::GetActivePerspective();
         state.Camera.Sensitivity = 0.005;
 
         // todo: From some kind of configuration file
         ImGuiLayer::SetFont("EngineAssets/Font/Open_Sans/static/OpenSans-Bold.ttf", 12);
+
+        // Register some colors for the theme menu
+        state.Settings.Theme.Colors.clear();
+        CE_DEFINE_COLOR_EDITABLE("Background", ImGuiCol_WindowBg);
+        CE_DEFINE_COLOR_EDITABLE("Header", ImGuiCol_Header);
+        CE_DEFINE_COLOR_EDITABLE("HeaderHovered", ImGuiCol_HeaderHovered);
+        CE_DEFINE_COLOR_EDITABLE("HeaderActive", ImGuiCol_HeaderActive);
+        CE_DEFINE_COLOR_EDITABLE("Button", ImGuiCol_Button);
+        CE_DEFINE_COLOR_EDITABLE("ButtonHovered", ImGuiCol_ButtonHovered);
+        CE_DEFINE_COLOR_EDITABLE("ButtonActive", ImGuiCol_ButtonActive);
+        CE_DEFINE_COLOR_EDITABLE("FrameBg", ImGuiCol_FrameBg);
+        CE_DEFINE_COLOR_EDITABLE("FrameBgHovered", ImGuiCol_FrameBgHovered);
+        CE_DEFINE_COLOR_EDITABLE("FrameBgActive", ImGuiCol_FrameBgActive);
+        CE_DEFINE_COLOR_EDITABLE("Tab", ImGuiCol_Tab);
+        CE_DEFINE_COLOR_EDITABLE("TabHovered", ImGuiCol_TabHovered);
+        CE_DEFINE_COLOR_EDITABLE("TabActive", ImGuiCol_TabActive);
+        CE_DEFINE_COLOR_EDITABLE("TabUnfocused", ImGuiCol_TabUnfocused);
+        CE_DEFINE_COLOR_EDITABLE("TabUnfocusedActive", ImGuiCol_TabUnfocusedActive);
+        CE_DEFINE_COLOR_EDITABLE("TitleBg", ImGuiCol_TitleBg);
+        CE_DEFINE_COLOR_EDITABLE("TitleBgActive", ImGuiCol_TitleBgActive);
+        CE_DEFINE_COLOR_EDITABLE("TitleBgCollapsed", ImGuiCol_TitleBgCollapsed);
+
+        // Load editor settings
+        {
+            EditorSettingsSerializer ser(&state.Settings);
+            ser.Deserialize(CE_SETTINGS_PATH);
+        }
 
         // todo: File
         Scene *scene = World::Create("Test");
@@ -41,11 +72,13 @@ namespace Core
 #if 0
         auto test1 = scene->CreateActor("TTV");
         auto mesh = test1->AddComponent<MeshComponent>();
-        mesh->GetMesh()->SetMaterial("Material.ce_mat");
-        test1->GetTransform().Position = {3, 3, 0};
+        test1->GetTransform().Position = {0, 0, 0};
+        mesh->GetMesh()->SetMaterial(Material::Configuration());
+        mesh->GetMesh()->GetMaterial()->GetColor().r = 125;
+        mesh->GetMesh()->GetMaterial()->GetColor().g = 125;
+        mesh->GetMesh()->GetMaterial()->GetColor().b = 125;
+        mesh->GetMesh()->GetMaterial()->SetColorTexture("CM.jfif");
 
-        SceneSerializer serializer{World::GetActive()};
-        serializer.Serialize("Scene.ce_scene");
 #else
         SceneSerializer serializer{World::GetActive()};
         serializer.Deserialize("Scene.ce_scene");
@@ -55,6 +88,13 @@ namespace Core
     void EditorLayer::OnDetach() {}
 
     void EditorLayer::OnEvent(Event *event) {}
+
+    void EditorLayer::SerializeSettings()
+    {
+        CE_LOG("CE_EDITOR", Trace, "Serializing scene settings");
+        EditorSettingsSerializer ser(&state.Settings);
+        ser.Serialize(CE_SETTINGS_PATH);
+    }
 
     void EditorLayer::OnUpdate()
     {
@@ -97,6 +137,16 @@ namespace Core
         }
 
         ImGui::End();
+
+        UI_TopMenuBar();
+
+        {
+            bool save = false;
+            state.Settings.Theme.Render(save);
+            if (save)
+                SerializeSettings();
+        }
+
         DockspaceEnd();
     }
 
@@ -167,4 +217,23 @@ namespace Core
     }
 
     void EditorLayer::DockspaceEnd() { ImGui::End(); }
+
+    void EditorLayer::UI_TopMenuBar()
+    {
+        if (ImGui::BeginMainMenuBar())
+        {
+            if (ImGui::MenuItem("Editor"))
+                ImGui::OpenPopup("EditorPopup");
+
+            if (ImGui::BeginPopup("EditorPopup"))
+            {
+                if (ImGui::MenuItem("Theme"))
+                    state.Settings.Theme.Active = true;
+
+                ImGui::EndPopup();
+            }
+
+            ImGui::EndMainMenuBar();
+        }
+    }
 } // namespace Core

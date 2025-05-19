@@ -226,11 +226,38 @@ namespace Core
         }
     }
 
-    void RenderMeshTextureUI(MeshComponent *m, Actor *a)
+    enum class TextureUIType
     {
-        if (ImGui::TreeNode("Color Texture"))
+        Color,
+        Normal
+    };
+
+    void RenderMeshTextureUI(MeshComponent *m, Actor *a, TextureUIType t = TextureUIType::Color)
+    {
+        std::string treeTitle = "Color Texture";
+        if (t == TextureUIType::Normal)
+            treeTitle = "Normal Texture";
+
+        if (ImGui::TreeNode(treeTitle.c_str()))
         {
-            Texture2D *tex = m->GetMesh()->GetMaterial()->GetColorTexture();
+            Texture2D *tex = nullptr;
+
+            switch (t)
+            {
+            case TextureUIType::Color:
+                tex = m->GetMesh()->GetMaterial()->GetColorTexture();
+                break;
+
+            case TextureUIType::Normal:
+                tex = m->GetMesh()->GetMaterial()->GetNormalTexture();
+                break;
+            }
+
+            if (tex == nullptr)
+            {
+                ImGui::TreePop();
+                return;
+            }
 
             const ImVec2 size = {100, 100}; // todo: Size type shit
 
@@ -247,8 +274,17 @@ namespace Core
                     std::string ext = StringUtils::GetFilenameExtension(path);
 
                     // todo: Some hashmap could work
-                    if (ext == "png" || ext == "jpeg" || ext == "jpg")
-                        m->GetMesh()->GetMaterial()->SetColorTexture(path);
+                    if (EditorUtils::StringIsImageExtension(ext))
+                        switch (t)
+                        {
+                        case TextureUIType::Color:
+                            m->GetMesh()->GetMaterial()->SetColorTexture(path);
+                            break;
+
+                        case TextureUIType::Normal:
+                            m->GetMesh()->GetMaterial()->SetNormalTexture(path);
+                            break;
+                        }
                 }
 
                 ImGui::EndDragDropTarget();
@@ -275,14 +311,30 @@ namespace Core
                     Platform::OpenFileDialog("Image (*.png *.jpg *.jpeg)\0*.png;*.jpg;*.jpeg\0");
 
                 if (!src.empty())
-                {
-                    m->GetMesh()->GetMaterial()->SetColorTexture(src);
-                }
+                    switch (t)
+                    {
+                    case TextureUIType::Color:
+                        m->GetMesh()->GetMaterial()->SetColorTexture(src);
+                        break;
+
+                    case TextureUIType::Normal:
+                        m->GetMesh()->GetMaterial()->SetNormalTexture(src);
+                        break;
+                    }
             }
 
             ImGui::SameLine();
             if (ImGui::Button("Default"))
-                m->GetMesh()->GetMaterial()->SetColorTextureDefault();
+                switch (t)
+                {
+                case TextureUIType::Color:
+                    m->GetMesh()->GetMaterial()->SetColorTextureDefault();
+                    break;
+
+                case TextureUIType::Normal:
+                    m->GetMesh()->GetMaterial()->SetNormalTextureDefault();
+                    break;
+                }
 
             ImGui::TreePop();
         }
@@ -317,11 +369,16 @@ namespace Core
                 case MaterialType::Config:
                     EditorUtils::ImGuiColor("Color", material->GetColor());
 
+                    ImGui::DragFloat("Metallic", &material->Metallic, 0.01, 0.01);
+                    ImGui::DragFloat("Roughness", &material->Roughness, 0.01, 0.01);
+                    ImGui::DragFloat("AO", &material->AO, 0.01, 0.01);
+
                     renderButtonMakeDefault = true;
                     renderButtonMakeConfig = false;
                     renderButtonMakeFile = true;
 
                     RenderMeshTextureUI(m, a);
+                    RenderMeshTextureUI(m, a, TextureUIType::Normal);
 
                     break;
 

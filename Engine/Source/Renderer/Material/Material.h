@@ -28,8 +28,17 @@ namespace Core
             /// Default color of the material.
             Color Color;
 
+            float Metallic = 1;
+
+            float Roughness = 1;
+
+            float AO = 1;
+
             /// The color texture to use, leave as empty for the default texture.
             std::string ColorTexture = "";
+
+            /// The normal texture to use, leave as empty for the default texture.
+            std::string NormalTexture = "";
 
             Configuration() = default;
             Configuration(const Configuration &other);
@@ -55,10 +64,15 @@ namespace Core
         Configuration state;
 
         TexPair colorTexture;
+        TexPair normalTexture;
 
         void ClearTexture(TexPair &pair);
 
     public:
+        float Metallic = 1;
+        float Roughness = 1;
+        float AO = 1;
+
         Material();
         Material(const Configuration &config);
         ~Material();
@@ -66,10 +80,14 @@ namespace Core
         void SetColorTextureDefault();
         void SetColorTexture(const std::string &name);
 
+        void SetNormalTextureDefault();
+        void SetNormalTexture(const std::string &name);
+
         void Use(Shader *shader);
 
         inline Color &GetColor() { return state.Color; };
         inline const std::string &GetName() { return state.Name; };
         inline Texture2D *GetColorTexture() { return colorTexture.Tex; };
+        inline Texture2D *GetNormalTexture() { return normalTexture.Tex; };
     };
 } // namespace Core

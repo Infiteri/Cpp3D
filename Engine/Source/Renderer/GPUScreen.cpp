@@ -30,6 +30,14 @@ namespace Core
             Buffer = new FrameBuffer(config);
         }
 
+        {
+            FrameBuffer::Configuration config;
+            config.Width = Renderer::GetViewport().Width;
+            config.Height = Renderer::GetViewport().Height;
+            config.Passes.push_back({FrameBuffer::Rgb});
+            PostBuffer = new FrameBuffer(config);
+        }
+
         Shader = ShaderSystem::GetEngineResource("Screen.glsl");
     }
 

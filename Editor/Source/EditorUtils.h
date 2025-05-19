@@ -17,6 +17,8 @@ namespace Core
         void ImGuiVector3Styled(const char *label, Vector3 &vec, float defaultValue = 0.0f);
         void ImGuiTransformEdit(Transform &transform);
 
+        bool StringIsImageExtension(const std::string &ext);
+
         template <typename T, typename UIFun>
         static void DrawComponentBaseUI(const std::string &name, T *component, int index, Actor *a,
                                         UIFun fun)

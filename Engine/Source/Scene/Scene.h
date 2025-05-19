@@ -3,6 +3,7 @@
 #include "Actor.h"
 #include "Base.h"
 #include "Core/UUID.h"
+#include "Scene/SceneEnvironment.h"
 
 #include <string>
 
@@ -25,11 +26,14 @@ namespace Core
 
         ActorList actors;
 
+        SceneEnvironment environment;
+
     public:
         Scene();
         ~Scene();
 
         inline ActorList &GetActors() { return actors; };
+        inline SceneEnvironment *GetEnvironment() { return &environment; };
 
         void Start();
         void Update();

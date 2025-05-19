@@ -25,6 +25,6 @@ namespace Core
 
         inline std::string GetImagePath() { return imageLoadPath; };
 
-        void Use() const;
+        void Use(int index = 0) const;
     };
 } // namespace Core

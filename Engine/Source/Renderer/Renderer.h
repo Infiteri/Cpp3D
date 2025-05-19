@@ -1,8 +1,14 @@
 #pragma once
 
 #include "Base.h"
+#include "Renderer/Buffer/VertexArray.h"
 #include "Renderer/Camera/PerspectiveCamera.h"
 #include "Renderer/GPUScreen.h"
+#include "Renderer/Light/DirectionalLight.h"
+#include "Renderer/Object/Sky.h"
+#include "Renderer/Object/Skybox.h"
+#include "Renderer/PostProcessor.h"
+#include "Renderer/Texture/CubemapTexture.h"
 
 namespace Core
 {
@@ -21,6 +27,13 @@ namespace Core
             bool HasContext = false;
             ViewportState ScreenViewport;
             GPUScreen Screen;
+
+            Skybox Skybox;
+
+            Sky *SkyInstance;
+            DirectionalLight *DirectionalLightInstance;
+
+            PostProcessor Post, SkyPost;
         };
 
     public:
@@ -35,12 +48,16 @@ namespace Core
         static CE_API void Viewport(int width, int height);
         static ViewportState &GetViewport();
 
-        static void SetColor(const Color &color);
-        static CE_API Color &GetColor();
+        static void SetSkyInstance(Sky *sky);
+        static void SetDirectioanlLightInstance(DirectionalLight *light);
 
         static void BeginFrame();
         static void Render();
         static void EndFrame();
+
+        static void RenderCubemapTexture(CubemapTexture *texture);
+        static void RenderCubemapTexture(CubemapTexture *texture, VertexArray *array,
+                                         Shader *shader, PerspectiveCamera *camera);
 
         static void UploadCameraToShader(Shader *shader, PerspectiveCamera *camera);
 

@@ -7,5 +7,6 @@ if NOT EXIST "Bin\" (
 )
 
 xcopy /E /I /Y /Q "Engine\Assets" "Bin\EngineAssets"
+xcopy /E /I /Y /Q "UsedAssets" "Bin\Assets"
 
 popd 

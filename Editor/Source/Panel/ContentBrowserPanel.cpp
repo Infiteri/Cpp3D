@@ -1,10 +1,12 @@
 #include "ContentBrowserPanel.h"
 #include "Core/FileSystem/FileSystem.h"
+#include "Core/Logger.h"
 #include "Core/Util/StringUtils.h"
 #include "EditorUtils.h"
 #include "Platform/Platform.h"
 
 #include "Renderer/Texture/TextureSystem.h"
+#include "Resource/CubemapLoader.h"
 #include "Resource/MaterialLoader.h"
 
 #include <imgui.h>
@@ -64,61 +66,70 @@ namespace Core
         EditorUtils::ImGuiColor("Color", Config.Color);
 
         // hack: This is hacked in right now, todo better texture editing
-        if (ImGui::TreeNode("Color Texture"))
+        auto DrawTextureEditor =
+            [](const char *label, Texture2D *&textureSlot, std::string &texturePathRef)
         {
-            if (Texture == nullptr)
-                Texture = TextureSystem::GetDefault();
-
-            ImGui::Image((void *)(u64)Texture->GetID(), {100, 100}); // todo: Size other than 100
-
-            if (ImGui::BeginDragDropTarget())
+            if (ImGui::TreeNode(label))
             {
-                if (const ImGuiPayload *payload =
-                        ImGui::AcceptDragDropPayload("ContentPanelDragDrop"))
+                if (textureSlot == nullptr)
+                    textureSlot = TextureSystem::GetDefault();
+
+                ImGui::Image((void *)(u64)textureSlot->GetID(),
+                             {100, 100}); // todo: Size other than 100
+
+                if (ImGui::BeginDragDropTarget())
                 {
-                    const char *path = (const char *)payload->Data;
-                    std::string ext = StringUtils::GetFilenameExtension(path);
-
-                    // todo: Some hashmap could work
-                    if (ext == "png" || ext == "jpeg" || ext == "jpg")
+                    if (const ImGuiPayload *payload =
+                            ImGui::AcceptDragDropPayload("ContentPanelDragDrop"))
                     {
-                        if (Texture != TextureSystem::GetDefault())
-                            delete Texture;
+                        const char *path = (const char *)payload->Data;
+                        std::string ext = StringUtils::GetFilenameExtension(path);
 
-                        Texture = new Texture2D();
-                        Texture->Load(path);
+                        if (EditorUtils::StringIsImageExtension(ext))
+                        {
+                            if (textureSlot != TextureSystem::GetDefault() &&
+                                textureSlot != nullptr)
+                                delete textureSlot;
+
+                            textureSlot = new Texture2D();
+                            textureSlot->Load(path);
+                            texturePathRef = path;
+                        }
+                    }
+                    ImGui::EndDragDropTarget();
+                }
+
+                if (ImGui::Button("Load"))
+                {
+                    std::string src = Platform::OpenFileDialog("Image \0*.png;*.jpg;*jpeg\0");
+                    if (!src.empty())
+                    {
+                        if (textureSlot != TextureSystem::GetDefault() && textureSlot != nullptr)
+                            delete textureSlot;
+
+                        textureSlot = new Texture2D();
+                        textureSlot->Load(src);
+                        texturePathRef = src;
                     }
                 }
 
-                ImGui::EndDragDropTarget();
-            }
+                ImGui::SameLine();
 
-            if (ImGui::Button("Load"))
-            {
-                std::string src = Platform::OpenFileDialog("Image \0*.png;*.jpg;*jpeg\0");
-                if (!src.empty())
+                if (ImGui::Button("Clear"))
                 {
-                    if (Texture != TextureSystem::GetDefault())
-                        delete Texture;
+                    if (textureSlot != TextureSystem::GetDefault())
+                        delete textureSlot;
 
-                    Texture = new Texture2D();
-                    Texture->Load(src);
-                    Config.ColorTexture = src;
+                    textureSlot = TextureSystem::GetDefault();
+                    texturePathRef.clear();
                 }
+
+                ImGui::TreePop();
             }
+        };
 
-            ImGui::SameLine();
-
-            if (ImGui::Button("Clear"))
-            {
-                if (Texture != TextureSystem::GetDefault())
-                    delete Texture;
-
-                Texture = TextureSystem::GetDefault();
-            }
-
-            ImGui::TreePop();
-        }
+        DrawTextureEditor("Color Texture", Texture, Config.ColorTexture);
+        DrawTextureEditor("Normal Texture", NormalTexture, Config.NormalTexture);
 
         if (ImGui::Button("Create"))
         {
@@ -139,6 +150,70 @@ namespace Core
 
         if (ImGui::Button("Cancel"))
             Active = false;
+
+        ImGui::End();
+    }
+
+    static bool CubemapPopupStringInput(std::string &input, const char *label)
+    {
+        EditorUtils::ImGuiString(label, input);
+
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ContentPanelDragDrop"))
+            {
+                const char *path = (const char *)payload->Data;
+                std::string ext = StringUtils::GetFilenameExtension(path);
+
+                if (EditorUtils::StringIsImageExtension(ext))
+                {
+                    input = path;
+                    ImGui::EndDragDropTarget();
+                    return true;
+                }
+            }
+
+            ImGui::EndDragDropTarget();
+        }
+
+        return false;
+    }
+
+    void ContentBrowserPanel::CreateCubemapPopup::Render()
+    {
+        if (!Active)
+            return;
+
+        ImGui::Begin("Create Cubemap File");
+
+        ImGui::Text("Will Create a new cubemap under the specified configuration ");
+        ImGui::Text("The final format is 'FolderPath/FilePath'");
+
+        EditorUtils::ImGuiString("Folder Path", TargetFolder);
+        EditorUtils::ImGuiString("File Path", File);
+
+        CubemapPopupStringInput(Config.Right, "Right");
+        CubemapPopupStringInput(Config.Left, "Left");
+        CubemapPopupStringInput(Config.Top, "Top");
+        CubemapPopupStringInput(Config.Bottom, "Bottom");
+        CubemapPopupStringInput(Config.Front, "Front");
+        CubemapPopupStringInput(Config.Back, "Back");
+
+        if (ImGui::Button("Create"))
+        {
+            Active = false;
+            CubemapLoader l;
+            l.Serialize(Config, TargetFolder + "/" + File); // todo: ext check
+
+            Config = {};
+        }
+
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+        {
+            Active = false;
+            Config = {};
+        }
 
         ImGui::End();
     }
@@ -192,7 +267,16 @@ namespace Core
                 state.CreateMaterial.TargetFolder = state.CurrentDirectroy;
                 state.CreateMaterial.Config = {};
                 state.CreateMaterial.Texture = nullptr;
+                state.CreateMaterial.NormalTexture = nullptr;
                 state.CreateMaterial.Active = true;
+            }
+
+            if (ImGui::MenuItem("Create Cubemap"))
+            {
+                state.CreateCubemap.File = "";
+                state.CreateCubemap.TargetFolder = state.CurrentDirectroy;
+                state.CreateCubemap.Config = {};
+                state.CreateCubemap.Active = true;
             }
 
             ImGui::End();
@@ -265,5 +349,6 @@ namespace Core
 
         state.CreateFile.Render();
         state.CreateMaterial.Render();
+        state.CreateCubemap.Render();
     }
 } // namespace Core

@@ -37,6 +37,21 @@ namespace Core
             Vertices[i + 1].Normal = normal;
             Vertices[i + 2].Normal = normal;
             Vertices[i + 3].Normal = normal;
+
+            // === Tangent calculation using v0, v1, v2 and UVs ===
+            Vector3 edge1 = v1 - v0;
+            Vector3 edge2 = v2 - v0;
+            Vector2 deltaUV1 = Vector2(UV1 - UV0, 0.0f);
+            Vector2 deltaUV2 = Vector2(UV1 - UV0, UV1 - UV0);
+
+            float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+            Vector3 tangent = (edge1 * deltaUV2.y - edge2 * deltaUV1.y) * f;
+            tangent.Normalize();
+
+            Vertices[i + 0].Tangent = tangent;
+            Vertices[i + 1].Tangent = tangent;
+            Vertices[i + 2].Tangent = tangent;
+            Vertices[i + 3].Tangent = tangent;
         };
 
         SetFace(0, {min_x, min_y, max_z}, {max_x, min_y, max_z}, {max_x, max_y, max_z},

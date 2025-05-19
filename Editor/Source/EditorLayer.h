@@ -3,8 +3,10 @@
 #include "Core/Event/Event.h"
 #include "Core/Layer/Layer.h"
 #include "EditorCamera.h"
+#include "EditorSettings.h"
 #include "Panel/Panel.h"
 #include "imgui.h"
+#include <string>
 
 namespace Core
 {
@@ -29,7 +31,8 @@ namespace Core
             DockspaceSettings Dockspace;
             ImVec2 ViewportSize;
 
-            // todo: make editor camera
+            EditorSettings Settings;
+
             EditorCamera Camera{nullptr};
 
             bool IsViewportFocused = false;
@@ -42,6 +45,8 @@ namespace Core
         void OnAttach();
         void OnDetach();
 
+        void SerializeSettings();
+
         void OnEvent(Event *event);
 
         void OnUpdate();
@@ -52,5 +57,9 @@ namespace Core
         void DockspaceRenderSceneViewport();
         void DockspaceEnd();
         // ---------------
+
+        // -- UI --
+        void UI_TopMenuBar();
+        // --------
     };
 } // namespace Core

@@ -10,10 +10,11 @@ namespace Core
         PerspectiveCamera *cam;
 
     public:
-        float Speed = 1.0f;
-        float FastSpeed = 3.0f;
+        float Speed = 0.8f;
+        float FastSpeed = 2.0f;
+        float SlowSpeed = 0.5f;
 
-        float Sensitivity = 0.05f;
+        float Sensitivity = 0.005f;
 
     public:
         EditorCamera(PerspectiveCamera *target);

@@ -125,7 +125,6 @@ namespace Core
         GLint location = GetUniLoc(name);
         if (location == -1)
         {
-            CE_WARN("Shader uniform '%s' not found or optimized out.", name);
             return;
         }
 
@@ -138,7 +137,6 @@ namespace Core
         GLint location = GetUniLoc(name);
         if (location == -1)
         {
-            CE_WARN("Shader uniform '%s' not found or optimized out.", name);
             return;
         }
 

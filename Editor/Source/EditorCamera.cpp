@@ -1,6 +1,7 @@
 #include "EditorCamera.h"
 #include "Base.h"
 
+#include "Core/Engine.h"
 #include "Core/Input.h"
 
 namespace Core
@@ -16,7 +17,12 @@ namespace Core
         {
             Input::SetMouseMode(MouseModes::Locked);
 
-            float realSpeed = (Input::GetKey(Keys::LeftShift) ? FastSpeed : Speed);
+            float realSpeed = Speed;
+            if (Input::GetKey(Keys::LeftShift))
+                realSpeed = FastSpeed;
+            if (Input::GetKey(Keys::LeftControl))
+                realSpeed = SlowSpeed;
+
             Vector3 rotation = cam->GetRotation();
 
             if (Input::GetKey(Keys::W))

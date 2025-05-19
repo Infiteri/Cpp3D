@@ -1,18 +1,19 @@
 #include "Renderer.h"
+#include "Buffer/Buffer.h"
+#include "Buffer/FrameBuffer.h"
+#include "Buffer/VertexArray.h"
+#include "Camera/CameraSystem.h"
 #include "Camera/PerspectiveCamera.h"
 #include "Core/Engine.h"
-#include "Core/Logger.h"
-#include "Renderer/Buffer/FrameBuffer.h"
-#include "Renderer/Buffer/VertexArray.h"
-#include "Renderer/Camera/CameraSystem.h"
-#include "Renderer/Light/DirectionalLight.h"
-#include "Renderer/Light/Light.h"
-#include "Renderer/Light/PointLight.h"
-#include "Renderer/Light/SpotLight.h"
-#include "Renderer/Material/MaterialSystem.h"
-#include "Renderer/Shader/Shader.h"
-#include "Renderer/Shader/ShaderSystem.h"
-#include "Renderer/Texture/TextureSystem.h"
+#include "Light/DirectionalLight.h"
+#include "Light/Light.h"
+#include "Material/MaterialSystem.h"
+#include "Object/Sky.h"
+#include "Renderer/Object/Skybox.h"
+#include "Shader/Shader.h"
+#include "Shader/ShaderSystem.h"
+#include "Texture/CubemapTexture.h"
+#include "Texture/TextureSystem.h"
 
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
@@ -20,8 +21,6 @@
 namespace Core
 {
     static Renderer::State state;
-    static Color BG{125, 125, 125, 255};
-    static DirectionalLight light;
 
     // easier to keep track of what gets started and gets shutdown
     static void InitializeRendererSubsystems()
@@ -30,6 +29,8 @@ namespace Core
         ShaderSystem::Init();
         TextureSystem::Init();
         MaterialSystem::Init();
+
+        state.Skybox.Init();
     }
 
     static void ShutdownRendererSubsystems()
@@ -39,15 +40,6 @@ namespace Core
         TextureSystem::Shutdown();
         MaterialSystem::Shutdown();
     }
-
-    void Renderer::SetColor(const Color &color)
-    {
-        BG.r = color.r;
-        BG.g = color.g;
-        BG.b = color.b;
-    }
-
-    Color &Renderer::GetColor() { return BG; }
 
     void Renderer::InitializeGLAD()
     {
@@ -66,6 +58,8 @@ namespace Core
 
         InitializeRendererSubsystems();
 
+        state.Post.Add("EngineAssets/Shaders/Post.glsl", false);
+
         state.Screen.Create();
 
         CameraSystem::AddPerspectiveCamera("Renderer",
@@ -75,7 +69,14 @@ namespace Core
 
         glEnable(GL_MULTISAMPLE);
 
-        light.Direction = {-1, 0, -1};
+        CubemapConfiguration config;
+        config.Right = "Assets/Lycksele3/posx.jpg";
+        config.Left = "Assets/Lycksele3/negx.jpg";
+        config.Top = "Assets/Lycksele3/posy.jpg";
+        config.Bottom = "Assets/Lycksele3/negy.jpg";
+        config.Front = "Assets/Lycksele3/posz.jpg";
+        config.Back = "Assets/Lycksele3/negz.jpg";
+        // sky.SetSkyboxMode(config);
     }
 
     void Renderer::Shutdown()
@@ -84,6 +85,13 @@ namespace Core
 
         ShutdownRendererSubsystems();
         state.Screen.Destroy();
+    }
+
+    void Renderer::SetSkyInstance(Sky *sky) { state.SkyInstance = sky; }
+
+    void Renderer::SetDirectioanlLightInstance(DirectionalLight *light)
+    {
+        state.DirectionalLightInstance = light;
     }
 
     void Renderer::Viewport(int width, int height)
@@ -101,6 +109,9 @@ namespace Core
 
         if (state.Screen.Buffer != nullptr)
             state.Screen.Buffer->Resize(width, height);
+
+        if (state.Screen.PostBuffer != nullptr)
+            state.Screen.PostBuffer->Resize(width, height);
     }
 
     ViewportState &Renderer::GetViewport() { return state.ScreenViewport; }
@@ -113,26 +124,30 @@ namespace Core
 
         state.Screen.Begin();
 
+        glClearColor(1, 1, 1, 1);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        if (state.SkyInstance)
+            state.SkyInstance->Render();
     }
 
     void Renderer::Render()
     {
         CE_VERIFY(state.HasContext);
-
-        glClearColor(BG.r / 255, BG.g / 255, BG.b / 255, 1);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         auto shhd = ShaderSystem::GetEngineResource("Object.glsl");
         auto camera = CameraSystem::GetActivePerspective();
-        light.Render(shhd);
 
         shhd->Use();
         UploadCameraToShader(shhd, camera);
 
         shhd->Int(LightIDManager::PointGetLastFrameCount(), "uPointLightCount");
         shhd->Int(LightIDManager::SpotGetLastFrameCount(), "uSpotLightCount");
+
+        if (state.DirectionalLightInstance)
+            state.DirectionalLightInstance->Render(shhd);
     }
 
     void Renderer::EndFrame()
@@ -142,15 +157,61 @@ namespace Core
         state.Screen.End();
 
         auto pass = state.Screen.Buffer->GetRenderPass(0);
-        state.Screen.Array->Bind();
+        auto post = state.Screen.PostBuffer;
+
+        post->Bind();
         state.Screen.Shader->Use();
 
         glActiveTexture(GL_TEXTURE0 + pass->Index);
         glBindTexture(GL_TEXTURE_2D, pass->Id);
         state.Screen.Shader->Int(pass->Index, "uScreenTexture");
 
+        state.Screen.Array->Bind();
         state.Screen.Array->GetVertexBuffer()->Bind();
         state.Screen.Array->GetVertexBuffer()->Draw();
+
+        // post processing goes here
+        for (auto shader : state.Post.GetEnabledShaders())
+        {
+            if (!shader)
+                continue;
+
+            shader->Use();
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, post->GetRenderPass(0)->Id);
+            state.Screen.Array->Bind();
+            state.Screen.Array->GetVertexBuffer()->Bind();
+            state.Screen.Array->GetVertexBuffer()->Draw();
+        }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        glBindTexture(GL_TEXTURE_2D, post->GetRenderPass(0)->Id);
+
+        state.Screen.Array->Bind();
+        state.Screen.Array->GetVertexBuffer()->Bind();
+        state.Screen.Array->GetVertexBuffer()->Draw();
+    }
+
+    void Renderer::RenderCubemapTexture(CubemapTexture *texture)
+    {
+        state.Skybox.RenderCubemap(texture);
+    }
+
+    void Renderer::RenderCubemapTexture(CubemapTexture *texture, VertexArray *array, Shader *shader,
+                                        PerspectiveCamera *camera)
+    {
+        CE_VERIFY(texture && camera && shader && array);
+
+        glDepthMask(false);
+        array->Bind();
+        shader->Use();
+        UploadCameraToShader(shader, camera);
+        shader->Mat4(Matrix4::Translate(camera->GetPosition()), "uModel");
+        texture->Use();
+        shader->Int(0, "uSkybox");
+        array->GetVertexBuffer()->Bind();
+        array->GetVertexBuffer()->Draw();
+        glDepthMask(true);
     }
 
     void Renderer::UploadCameraToShader(Shader *shader, PerspectiveCamera *camera)
@@ -163,6 +224,6 @@ namespace Core
         shader->Vec3(camera->GetPosition(), "uCameraPosition");
     }
 
-    u32 Renderer::GetSceneViewportPassID() { return state.Screen.Buffer->GetRenderPass(0)->Id; }
+    u32 Renderer::GetSceneViewportPassID() { return state.Screen.PostBuffer->GetRenderPass(0)->Id; }
 
 } // namespace Core

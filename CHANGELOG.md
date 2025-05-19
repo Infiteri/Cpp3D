@@ -58,3 +58,12 @@
 2. Added Spot lights
 3. Added Light components
 3. Added serialization/deserialization to lights
+
+# 0.0.8 - 19.05.2025
+
+1. Added cubemap textures
+2. Added simple Sky system
+3. Added post processing
+4. Added simple PBR
+5. Added scene environment
+6. Added more Editor features

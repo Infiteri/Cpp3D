@@ -11,6 +11,7 @@ namespace Core
         Vector3 Position;
         Vector2 UV;
         Vector3 Normal;
+        Vector3 Tangent;
     };
 
     class Geometry

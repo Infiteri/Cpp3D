@@ -88,6 +88,17 @@ namespace Core
             z -= other.z;
         }
 
+        void Normalize()
+        {
+            float l = sqrt(x * x + y * y + z * z);
+            if (l > 0.0f)
+            {
+                x /= l;
+                y /= l;
+                z /= l;
+            }
+        }
+
         void Set(float x, float y, float z);
     };
 

@@ -15,15 +15,13 @@ namespace Core
         out << YAML::EndMap;
     }
 
-    static void DeserializeTexture(YAML::Node node, const char *field,
-                                   Material::Configuration &config)
+    static void DeserializeTexture(YAML::Node node, const char *field, std::string &targetPath)
     {
-        std::string &targetPath = config.ColorTexture;
-
         if (node[field])
             targetPath = node[field]["FilePath"].as<std::string>();
     }
 
+    // todo: FIX THE WRONG FILE FORMAT PLEASE IT SHOULD ALL BE UNDER THE MAP
     void MaterialLoader::Serialize(const std::string &path, Material *material)
     {
         YAML::Emitter out;
@@ -39,10 +37,20 @@ namespace Core
     {
         auto mat = material;
         SerializerUtils::SerializeColor(mat->GetColor(), "Color", out);
+
+        CE_SERIALIZE_FIELD("Metallic", material->Metallic);
+        CE_SERIALIZE_FIELD("Roughness", material->Roughness);
+        CE_SERIALIZE_FIELD("AO", material->AO);
+
         if (mat->GetColorTexture())
             SerializeTexture(mat->GetColorTexture(), "ColorTexture", out);
         else
             CE_ERROR("Material Color Texture should never be nullptr.");
+
+        if (mat->GetNormalTexture())
+            SerializeTexture(mat->GetNormalTexture(), "NormalTexture", out);
+        else
+            CE_ERROR("Material Normal Texture should never be nullptr.");
     }
 
     void MaterialLoader::Deserialize(const std::string &path, Material::Configuration &material)
@@ -55,6 +63,10 @@ namespace Core
     void MaterialLoader::Deserialize(YAML::Node node, Material::Configuration &material)
     {
         material.Color = SerializerUtils::DeserializeColor(node["Color"]);
-        DeserializeTexture(node, "ColorTexture", material);
+        material.Metallic = node["Metallic"].as<float>();
+        material.Roughness = node["Roughness"].as<float>();
+        material.AO = node["AO"].as<float>();
+        DeserializeTexture(node, "ColorTexture", material.ColorTexture);
+        DeserializeTexture(node, "NormalTexture", material.NormalTexture);
     }
 } // namespace Core
