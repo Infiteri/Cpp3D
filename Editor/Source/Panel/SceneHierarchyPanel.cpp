@@ -3,6 +3,7 @@
 #include "Core/Input.h"
 #include "Core/Logger.h"
 #include "Core/Util/StringUtils.h"
+#include "EditorLayer.h"
 #include "EditorUtils.h"
 #include "Platform/Platform.h"
 #include "Renderer/Geometry/Geometry.h"
@@ -28,7 +29,6 @@
 #define CE_ADD_COMP_RENDER(label, type)                                                            \
     if (ImGui::MenuItem(label))                                                                    \
     a->AddComponent<type>()
-
 namespace Core
 {
     static int actorIndex = 0; // hack: Really hacked in
@@ -41,7 +41,10 @@ namespace Core
         {
             if (ImGui::MenuItem("Create New Actor"))
             {
-                World::GetActive()->CreateActor("Actor");
+                if (!World::GetActive())
+                    CE_LOG_NO_ACTIVE_SCENE();
+                else
+                    World::GetActive()->CreateActor("Actor");
             }
 
             ImGui::EndPopup();

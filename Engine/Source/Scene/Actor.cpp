@@ -22,7 +22,7 @@ namespace Core
     void Actor::_CalculateTransformMatrices()
     {
         localMatrix = transform.GetMatrix();
-        globalMatrix = parent ? (localMatrix * parent->GetGlobalMatrix()) : localMatrix;
+        globalMatrix = parent ? (parent->GetGlobalMatrix() * localMatrix) : localMatrix;
     }
 
     void Actor::SetName(const std::string &newName) { name = newName; }
@@ -163,7 +163,12 @@ namespace Core
     void Actor::Stop()
     {
         if (state == State::Stopped || state == State::Uninitialzied)
+        {
+            CE_LOG("CE_SCENE", Warn, "Calling stop on stopped actor, nothing done.");
             return;
+        }
+
+        state = State::Stopped;
 
         for (auto comp : components)
         {

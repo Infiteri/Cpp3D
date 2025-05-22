@@ -15,6 +15,7 @@ namespace Core
         };
 
         Matrix4();
+        Matrix4(float *data);
         Matrix4(const Matrix4 &other);
         ~Matrix4() = default;
 

@@ -39,6 +39,7 @@ namespace Core
         void _CalculateTransformMatrices();
 
         friend class SceneSerializer;
+        friend class EditorLayer;
 
     public:
         Actor();

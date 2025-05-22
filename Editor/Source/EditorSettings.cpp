@@ -10,8 +10,105 @@
 
 #include <yaml-cpp/yaml.h>
 
+#define CE_DEFINE_COLOR_EDITABLE(name, color) Theme.Colors.push_back({name, color})
+
 namespace Core
 {
+    void EditorSettings::RegisterThemeColors()
+    {
+        Theme.Colors.clear();
+
+        // Text & Background
+        CE_DEFINE_COLOR_EDITABLE("Text", ImGuiCol_Text);
+        CE_DEFINE_COLOR_EDITABLE("TextDisabled", ImGuiCol_TextDisabled);
+        CE_DEFINE_COLOR_EDITABLE("WindowBg", ImGuiCol_WindowBg);
+        CE_DEFINE_COLOR_EDITABLE("ChildBg", ImGuiCol_ChildBg);
+        CE_DEFINE_COLOR_EDITABLE("PopupBg", ImGuiCol_PopupBg);
+        CE_DEFINE_COLOR_EDITABLE("Border", ImGuiCol_Border);
+        CE_DEFINE_COLOR_EDITABLE("BorderShadow", ImGuiCol_BorderShadow);
+
+        // Frame & Widgets
+        CE_DEFINE_COLOR_EDITABLE("FrameBg", ImGuiCol_FrameBg);
+        CE_DEFINE_COLOR_EDITABLE("FrameBgHovered", ImGuiCol_FrameBgHovered);
+        CE_DEFINE_COLOR_EDITABLE("FrameBgActive", ImGuiCol_FrameBgActive);
+
+        // Title Bar
+        CE_DEFINE_COLOR_EDITABLE("TitleBg", ImGuiCol_TitleBg);
+        CE_DEFINE_COLOR_EDITABLE("TitleBgActive", ImGuiCol_TitleBgActive);
+        CE_DEFINE_COLOR_EDITABLE("TitleBgCollapsed", ImGuiCol_TitleBgCollapsed);
+
+        // Menu Bar
+        CE_DEFINE_COLOR_EDITABLE("MenuBarBg", ImGuiCol_MenuBarBg);
+
+        // Scrollbar
+        CE_DEFINE_COLOR_EDITABLE("ScrollbarBg", ImGuiCol_ScrollbarBg);
+        CE_DEFINE_COLOR_EDITABLE("ScrollbarGrab", ImGuiCol_ScrollbarGrab);
+        CE_DEFINE_COLOR_EDITABLE("ScrollbarGrabHovered", ImGuiCol_ScrollbarGrabHovered);
+        CE_DEFINE_COLOR_EDITABLE("ScrollbarGrabActive", ImGuiCol_ScrollbarGrabActive);
+
+        // Checkboxes, RadioButtons
+        CE_DEFINE_COLOR_EDITABLE("CheckMark", ImGuiCol_CheckMark);
+
+        // Sliders
+        CE_DEFINE_COLOR_EDITABLE("SliderGrab", ImGuiCol_SliderGrab);
+        CE_DEFINE_COLOR_EDITABLE("SliderGrabActive", ImGuiCol_SliderGrabActive);
+
+        // Buttons
+        CE_DEFINE_COLOR_EDITABLE("Button", ImGuiCol_Button);
+        CE_DEFINE_COLOR_EDITABLE("ButtonHovered", ImGuiCol_ButtonHovered);
+        CE_DEFINE_COLOR_EDITABLE("ButtonActive", ImGuiCol_ButtonActive);
+
+        // Headers (Collapsing headers, etc.)
+        CE_DEFINE_COLOR_EDITABLE("Header", ImGuiCol_Header);
+        CE_DEFINE_COLOR_EDITABLE("HeaderHovered", ImGuiCol_HeaderHovered);
+        CE_DEFINE_COLOR_EDITABLE("HeaderActive", ImGuiCol_HeaderActive);
+
+        // Separators
+        CE_DEFINE_COLOR_EDITABLE("Separator", ImGuiCol_Separator);
+        CE_DEFINE_COLOR_EDITABLE("SeparatorHovered", ImGuiCol_SeparatorHovered);
+        CE_DEFINE_COLOR_EDITABLE("SeparatorActive", ImGuiCol_SeparatorActive);
+
+        // Resize Grip
+        CE_DEFINE_COLOR_EDITABLE("ResizeGrip", ImGuiCol_ResizeGrip);
+        CE_DEFINE_COLOR_EDITABLE("ResizeGripHovered", ImGuiCol_ResizeGripHovered);
+        CE_DEFINE_COLOR_EDITABLE("ResizeGripActive", ImGuiCol_ResizeGripActive);
+
+        // Tabs
+        CE_DEFINE_COLOR_EDITABLE("Tab", ImGuiCol_Tab);
+        CE_DEFINE_COLOR_EDITABLE("TabHovered", ImGuiCol_TabHovered);
+        CE_DEFINE_COLOR_EDITABLE("TabActive", ImGuiCol_TabActive);
+        CE_DEFINE_COLOR_EDITABLE("TabUnfocused", ImGuiCol_TabUnfocused);
+        CE_DEFINE_COLOR_EDITABLE("TabUnfocusedActive", ImGuiCol_TabUnfocusedActive);
+
+        // Docking (optional)
+        CE_DEFINE_COLOR_EDITABLE("DockingPreview", ImGuiCol_DockingPreview);
+        CE_DEFINE_COLOR_EDITABLE("DockingEmptyBg", ImGuiCol_DockingEmptyBg);
+
+        // Plotting
+        CE_DEFINE_COLOR_EDITABLE("PlotLines", ImGuiCol_PlotLines);
+        CE_DEFINE_COLOR_EDITABLE("PlotLinesHovered", ImGuiCol_PlotLinesHovered);
+        CE_DEFINE_COLOR_EDITABLE("PlotHistogram", ImGuiCol_PlotHistogram);
+        CE_DEFINE_COLOR_EDITABLE("PlotHistogramHovered", ImGuiCol_PlotHistogramHovered);
+
+        // Table
+        CE_DEFINE_COLOR_EDITABLE("TableHeaderBg", ImGuiCol_TableHeaderBg);
+        CE_DEFINE_COLOR_EDITABLE("TableBorderStrong", ImGuiCol_TableBorderStrong);
+        CE_DEFINE_COLOR_EDITABLE("TableBorderLight", ImGuiCol_TableBorderLight);
+        CE_DEFINE_COLOR_EDITABLE("TableRowBg", ImGuiCol_TableRowBg);
+        CE_DEFINE_COLOR_EDITABLE("TableRowBgAlt", ImGuiCol_TableRowBgAlt);
+
+        // Drag & Drop
+        CE_DEFINE_COLOR_EDITABLE("DragDropTarget", ImGuiCol_DragDropTarget);
+
+        // Navigation Highlight
+        CE_DEFINE_COLOR_EDITABLE("NavHighlight", ImGuiCol_NavHighlight);
+        CE_DEFINE_COLOR_EDITABLE("NavWindowingHighlight", ImGuiCol_NavWindowingHighlight);
+        CE_DEFINE_COLOR_EDITABLE("NavWindowingDimBg", ImGuiCol_NavWindowingDimBg);
+
+        // Modal
+        CE_DEFINE_COLOR_EDITABLE("ModalWindowDimBg", ImGuiCol_ModalWindowDimBg);
+    }
+
     void ThemeSettings::Render(bool &wantsSave)
     {
         wantsSave = false;
@@ -46,19 +143,48 @@ namespace Core
             wantsSave = true;
             ImGuiLayer::SetDefaultTheme();
         }
-        ImGui::Dummy(ImVec2(0, 0));
-        ImVec2 buttonSize = ImVec2(80, ImGui::GetFrameHeightWithSpacing());
-        ImVec2 buttonPos =
-            ImVec2(ImGui::GetWindowSize().x - buttonSize.x - ImGui::GetStyle().FramePadding.x * 2,
-                   ImGui::GetWindowSize().y - buttonSize.y - ImGui::GetStyle().FramePadding.y * 2);
 
-        ImGui::SetCursorPos(buttonPos);
+        ImGui::SameLine();
 
-        if (ImGui::Button("Ok", buttonSize))
+        if (ImGui::Button("Ok"))
         {
             Active = false;
             wantsSave = true;
         }
+        ImGui::End();
+    }
+
+    void GeneralSettings::Render(bool &wantsSave)
+    {
+        wantsSave = false;
+        if (!Active)
+            return;
+
+        float margin = 50.0f;
+
+        ImGui::SetNextWindowPos({margin, margin});
+        ImGui::SetNextWindowSize({Engine::GetWindow()->GetWidth() - (margin + 5),
+                                  Engine::GetWindow()->GetHeight() - (margin + 5)});
+
+        ImGui::Begin("Settings");
+        ImGui::SeparatorText("Camera");
+
+        ImGui::DragFloat("FOV", &Camera.FOV, 0.02f, 0.01f);
+        ImGui::DragFloat("Normal Speed", &Camera.NormalSpeed, 0.02f, 0.01f);
+        ImGui::DragFloat("Fast Speed", &Camera.FastSpeed, 0.02f, 0.01f);
+        ImGui::DragFloat("Slow Speed", &Camera.SlowSpeed, 0.02f, 0.01f);
+
+        if (ImGui::Button("Ok"))
+        {
+            wantsSave = true;
+            Active = false;
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel"))
+            Active = false;
+
         ImGui::End();
     }
 
@@ -89,6 +215,14 @@ namespace Core
         }
 
         out << YAML::EndMap;
+
+        out << YAML::Key << "Camera" << YAML::Value << YAML::BeginMap;
+        CE_SERIALIZE_FIELD("FOV", settings->General.Camera.FOV);
+        CE_SERIALIZE_FIELD("NormalSpeed", settings->General.Camera.NormalSpeed);
+        CE_SERIALIZE_FIELD("FastSpeed", settings->General.Camera.FastSpeed);
+        CE_SERIALIZE_FIELD("SlowSpeed", settings->General.Camera.SlowSpeed);
+        out << YAML::EndMap;
+
         out << YAML::EndMap;
         out << YAML::EndMap;
 
@@ -138,5 +272,18 @@ namespace Core
                 color.w = colorNode[3].as<float>();
             }
         }
+
+        auto camera = data["EditorSettings"]["Camera"];
+        if (!camera)
+        {
+            CE_LOG("CE_EDITOR", Error, "Unable to deserialize editor settings, no camera node.");
+            return;
+        }
+
+        settings->General.Camera.FOV = camera["FOV"].as<float>();
+        settings->General.Camera.NormalSpeed = camera["NormalSpeed"].as<float>();
+        settings->General.Camera.FastSpeed = camera["FastSpeed"].as<float>();
+        settings->General.Camera.SlowSpeed = camera["SlowSpeed"].as<float>();
     }
 } // namespace Core
+//

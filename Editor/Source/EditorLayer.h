@@ -3,24 +3,19 @@
 #include "Core/Event/Event.h"
 #include "Core/Layer/Layer.h"
 #include "EditorCamera.h"
+#include "EditorDock.h"
+#include "EditorKeybind.h"
 #include "EditorSettings.h"
+#include "ImGuizmo.h"
 #include "Panel/Panel.h"
 #include "imgui.h"
-#include <string>
+
+// note: Kinda eh!
+#define CE_LOG_NO_ACTIVE_SCENE()                                                                   \
+    CE_LOG("CE_EDITOR", Error, "World has no active scene, cannot perform action")
 
 namespace Core
 {
-    // note: So far hardcoded, might remove this later
-    struct DockspaceSettings
-    {
-        bool Open = true;
-        bool Fullscreen = true;
-        ImGuiDockNodeFlags Flags = ImGuiDockNodeFlags_None;
-        ImGuiWindowFlags WindowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-        ImVec2 ViewportLeftTop;
-        ImVec2 ViewportRightBottom;
-    };
-
     class EditorLayer : public Layer
     {
     public:
@@ -28,7 +23,12 @@ namespace Core
         {
             PanelSystem Panels;
 
-            DockspaceSettings Dockspace;
+            EditorDock Dock;
+
+            EditorKeybind Keybind;
+
+            std::string ActiveScenePath = "";
+
             ImVec2 ViewportSize;
 
             EditorSettings Settings;
@@ -36,6 +36,8 @@ namespace Core
             EditorCamera Camera{nullptr};
 
             bool IsViewportFocused = false;
+
+            ImGuizmo::OPERATION CurrentGizmoOperation = ImGuizmo::TRANSLATE;
         };
 
     public:
@@ -46,6 +48,7 @@ namespace Core
         void OnDetach();
 
         void SerializeSettings();
+        void UpdateWithSettings();
 
         void OnEvent(Event *event);
 
@@ -53,13 +56,21 @@ namespace Core
         void OnImGuiRender();
 
         // -- Dockspace --
-        void DockspaceBegin();
         void DockspaceRenderSceneViewport();
-        void DockspaceEnd();
         // ---------------
+
+        // -- Scene --
+        void SceneNew();
+        void SceneOpen();
+        void SceneOpen(const std::string &name);
+        void SceneSave();
+        void SceneSaveAs();
+        // -----------
 
         // -- UI --
         void UI_TopMenuBar();
         // --------
+
+        static EditorLayer *GetInstance();
     };
 } // namespace Core

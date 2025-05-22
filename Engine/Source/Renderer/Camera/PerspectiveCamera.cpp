@@ -1,5 +1,7 @@
 #include "PerspectiveCamera.h"
 
+#include "Math/Math.h"
+
 namespace Core
 {
     PerspectiveCamera::PerspectiveCamera(float fov, float aspect, float near, float far)
@@ -16,7 +18,7 @@ namespace Core
 
     void PerspectiveCamera::UpdateProjection()
     {
-        projection = Matrix4::Perspective(FOV, Aspect, Near, Far);
+        projection = Matrix4::Perspective(FOV * CE_DEG_TO_RAD, Aspect, Near, Far);
     }
 
     void PerspectiveCamera::UpdateProjection(float fov, float aspect, float near, float far)

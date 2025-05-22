@@ -8,6 +8,7 @@ if NOT EXIST "Bin\" (
 
 copy /y "Engine\Vendor\GLFW\lib\glfw3.dll" "Bin\glfw3.dll"
 copy /y "Engine\Vendor\ImGui\ImGui.dll" "Bin\ImGui.dll"
+copy /y "Engine\Vendor\ImGuizmo\ImGuizmo.dll" "Bin\ImGuizmo.dll"
 copy /y "Engine\Vendor\YAML\YAML.dll" "Bin\YAML.dll"
 copy /y "Engine\Vendor\glad\lib\glad.dll" "Bin\glad.dll"
 

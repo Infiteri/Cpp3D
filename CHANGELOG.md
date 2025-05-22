@@ -67,3 +67,12 @@
 4. Added simple PBR
 5. Added scene environment
 6. Added more Editor features
+
+# 0.0.9 - 22.05.2025
+
+1. Fixed the bug where deserializing a non-existent file would crash
+2. Added serialization and deserialization of the Scene Environment
+3. Added Gizmos
+4. Added more functionality to Content Browser Panel
+5. Added Camera settings
+6. Added more colors to the theme editor

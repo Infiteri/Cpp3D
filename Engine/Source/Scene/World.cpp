@@ -31,6 +31,7 @@ namespace Core
         }
 
         state.Scenes[name] = new Scene();
+        state.Scenes[name]->SetName(name);
         // todo: think about names?
         return state.Scenes[name];
     }

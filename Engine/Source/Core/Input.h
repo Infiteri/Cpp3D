@@ -169,6 +169,8 @@ namespace Core
         struct KeyboardState
         {
             KeySet Current;
+            KeySet Last;
+            KeySet Just;
         };
 
         struct State
@@ -185,6 +187,8 @@ namespace Core
         static void Shutdown();
 
         static bool GetKey(Keys key);
+        static bool GetKeyJustNow(Keys key);
+
         static bool GetButton(Buttons button);
 
         static void SetMouseMode(MouseModes mode);

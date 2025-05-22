@@ -14,6 +14,9 @@ namespace Core
     YAML::Node CeSerializer::_LoadEmitterData(const std::string &filepath)
     {
         std::ifstream stream(filepath);
+        if (!stream.is_open())
+            return YAML::Node();
+
         std::stringstream strStream(filepath);
         strStream << stream.rdbuf();
         return YAML::Load(strStream.str());

@@ -28,12 +28,17 @@ namespace Core
 
         SceneEnvironment environment;
 
+        std::string name;
+
     public:
         Scene();
         ~Scene();
 
         inline ActorList &GetActors() { return actors; };
         inline SceneEnvironment *GetEnvironment() { return &environment; };
+        inline std::string GetName() { return name; };
+
+        void SetName(const std::string &n);
 
         void Start();
         void Update();

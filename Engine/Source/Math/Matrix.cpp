@@ -15,6 +15,12 @@ namespace Core
         data[0] = data[5] = data[10] = data[15] = 1;
     }
 
+    Matrix4::Matrix4(float *data)
+    {
+        for (int i = 0; i < 16; i++)
+            this->data[i] = data[i];
+    }
+
     Matrix4::Matrix4(const Matrix4 &other) { From(other); }
 
     void Matrix4::From(const Matrix4 &other)

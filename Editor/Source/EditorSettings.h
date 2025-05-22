@@ -25,9 +25,26 @@ namespace Core
         void Render(bool &wantsSave);
     };
 
+    struct CameraSettings
+    {
+        float FOV = 90;
+        float NormalSpeed = 1.0f, FastSpeed = 2.0f, SlowSpeed = 0.5f;
+    };
+
+    struct GeneralSettings
+    {
+        CameraSettings Camera;
+
+        bool Active = false;
+        void Render(bool &wantsSave);
+    };
+
     struct EditorSettings
     {
         ThemeSettings Theme;
+        GeneralSettings General;
+
+        void RegisterThemeColors();
     };
 
     class EditorSettingsSerializer : public CeSerializer

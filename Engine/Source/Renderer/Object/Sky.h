@@ -18,6 +18,7 @@ namespace Core
         SkyMode mode;
         Color color;
         CubemapTexture *cubemap = nullptr;
+        std::string cubemapLoadPath = "";
 
         void _DestroyFromCurrentMode();
 
@@ -33,5 +34,6 @@ namespace Core
 
         inline SkyMode GetMode() { return mode; };
         inline Color &GetColor() { return color; };
+        inline std::string GetCubemapLoadPath() { return cubemapLoadPath; };
     };
 } // namespace Core

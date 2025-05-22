@@ -20,6 +20,8 @@ namespace Core
 
     bool Input::GetKey(Keys key) { return state.Keyboard.Current[key]; }
 
+    bool Input::GetKeyJustNow(Keys key) { return state.Keyboard.Just[key]; }
+
     bool Input::GetButton(Buttons button) { return state.Mouse.Current[button]; }
 
     void Input::SetMouseMode(MouseModes mode)
@@ -64,7 +66,12 @@ namespace Core
 
     int Input::GetMouseDeltaY() { return state.Mouse.Delta.y; }
 
-    void InputUpdateKey(Keys key, bool p) { state.Keyboard.Current[key] = p; }
+    void InputUpdateKey(Keys key, bool p)
+    {
+        state.Keyboard.Last[key] = state.Keyboard.Current[key];
+        state.Keyboard.Current[key] = p;
+        state.Keyboard.Just[key] = (p && !state.Keyboard.Last[key]);
+    }
 
     void InputUpdateMouseButton(Buttons button, bool p) { state.Mouse.Current[button] = p; }
 

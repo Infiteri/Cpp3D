@@ -13,6 +13,13 @@ namespace Core
 {
     void SceneEnvironmentPanel::OnImGuiRender()
     {
+        if (!World::GetActive())
+        {
+            ImGui::Begin("Scene Environment");
+            ImGui::TextColored({1, 0, 0, 1}, "No active scene.");
+            ImGui::End();
+            return;
+        }
         auto env = World::GetActive()->GetEnvironment();
 
         ImGui::Begin("Scene Environment");

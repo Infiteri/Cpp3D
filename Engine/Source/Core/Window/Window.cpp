@@ -29,7 +29,23 @@ namespace Core
 
     static void CallbackKeyboard(GLFWwindow *window, int key, int scancode, int action, int mods)
     {
-        EventSystem::Emit<EventKeyboardButton>(EventType::KeyboardButton, -1, (Keys)key);
+        enum EventKeyboardButton::Type type = EventKeyboardButton::Press;
+        switch (action)
+        {
+        case GLFW_PRESS:
+        default:
+            break;
+
+        case GLFW_REPEAT:
+            type = EventKeyboardButton::Repeat;
+            break;
+
+        case GLFW_RELEASE:
+            type = EventKeyboardButton::Release;
+            break;
+        }
+
+        EventSystem::Emit<EventKeyboardButton>(EventType::KeyboardButton, -1, (Keys)key, type);
     }
 
     Window::Window(const Window::Configuration &config)

@@ -7,7 +7,11 @@
 
 namespace Core
 {
-    Sky::Sky() { cubemap = nullptr; }
+    Sky::Sky()
+    {
+        cubemap = nullptr;
+        mode = SkyMode::Color;
+    }
 
     Sky::~Sky() { _DestroyFromCurrentMode(); }
 
@@ -24,6 +28,8 @@ namespace Core
         default:
             break;
         }
+
+        cubemapLoadPath = "";
     }
 
     void Sky::SetColorMode(const Color &color)
@@ -49,6 +55,7 @@ namespace Core
         CubemapConfiguration config;
         loader.Deserialize(config, name);
         SetSkyboxMode(config);
+        cubemapLoadPath = name;
     }
 
     void Sky::Render()

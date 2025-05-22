@@ -1,9 +1,12 @@
 #include "EditorLayer.h"
+#include "Base.h"
 #include "Core/Engine.h"
+#include "Core/Event/CeEvents.h"
 #include "Core/Event/Event.h"
 #include "Core/Input.h"
 #include "Core/Layer/ImGuiLayer.h"
 #include "Core/Logger.h"
+#include "Core/Util/StringUtils.h"
 #include "EditorSettings.h"
 #include "Renderer/Camera/CameraSystem.h"
 #include "Renderer/Renderer.h"
@@ -11,17 +14,25 @@
 #include "Scene/Serialzier/SceneSerializer.h"
 #include "Scene/World.h"
 
-#include <imgui.h>
+#include "Platform/Platform.h"
 
-#define CE_DEFINE_COLOR_EDITABLE(name, color) state.Settings.Theme.Colors.push_back({name, color})
+#include "Panel/SceneHierarchyPanel.h"
+
+#include <ImGuizmo.h>
+#include <imgui.h>
+#include <string>
+
 #define CE_SETTINGS_PATH "EditorSettings.ce_settings"
 
 namespace Core
 {
     static EditorLayer::State state;
+    static EditorLayer *Instance = nullptr;
 
     void EditorLayer::OnAttach()
     {
+        Instance = this;
+
         CE_DEFINE_LOG_CATEGORY("CE_EDITOR", "Editor");
 
         state.Camera = CameraSystem::GetActivePerspective();
@@ -30,31 +41,14 @@ namespace Core
         // todo: From some kind of configuration file
         ImGuiLayer::SetFont("EngineAssets/Font/Open_Sans/static/OpenSans-Bold.ttf", 12);
 
-        // Register some colors for the theme menu
-        state.Settings.Theme.Colors.clear();
-        CE_DEFINE_COLOR_EDITABLE("Background", ImGuiCol_WindowBg);
-        CE_DEFINE_COLOR_EDITABLE("Header", ImGuiCol_Header);
-        CE_DEFINE_COLOR_EDITABLE("HeaderHovered", ImGuiCol_HeaderHovered);
-        CE_DEFINE_COLOR_EDITABLE("HeaderActive", ImGuiCol_HeaderActive);
-        CE_DEFINE_COLOR_EDITABLE("Button", ImGuiCol_Button);
-        CE_DEFINE_COLOR_EDITABLE("ButtonHovered", ImGuiCol_ButtonHovered);
-        CE_DEFINE_COLOR_EDITABLE("ButtonActive", ImGuiCol_ButtonActive);
-        CE_DEFINE_COLOR_EDITABLE("FrameBg", ImGuiCol_FrameBg);
-        CE_DEFINE_COLOR_EDITABLE("FrameBgHovered", ImGuiCol_FrameBgHovered);
-        CE_DEFINE_COLOR_EDITABLE("FrameBgActive", ImGuiCol_FrameBgActive);
-        CE_DEFINE_COLOR_EDITABLE("Tab", ImGuiCol_Tab);
-        CE_DEFINE_COLOR_EDITABLE("TabHovered", ImGuiCol_TabHovered);
-        CE_DEFINE_COLOR_EDITABLE("TabActive", ImGuiCol_TabActive);
-        CE_DEFINE_COLOR_EDITABLE("TabUnfocused", ImGuiCol_TabUnfocused);
-        CE_DEFINE_COLOR_EDITABLE("TabUnfocusedActive", ImGuiCol_TabUnfocusedActive);
-        CE_DEFINE_COLOR_EDITABLE("TitleBg", ImGuiCol_TitleBg);
-        CE_DEFINE_COLOR_EDITABLE("TitleBgActive", ImGuiCol_TitleBgActive);
-        CE_DEFINE_COLOR_EDITABLE("TitleBgCollapsed", ImGuiCol_TitleBgCollapsed);
+        state.Settings.RegisterThemeColors();
 
         // Load editor settings
+        // todo: Better placement?
         {
             EditorSettingsSerializer ser(&state.Settings);
             ser.Deserialize(CE_SETTINGS_PATH);
+            UpdateWithSettings();
         }
 
         // todo: File
@@ -62,15 +56,7 @@ namespace Core
         World::Activate("Test");
 
 #if 0
-       Material::Configuration c;
-        c.Color = {0, 125, 255, 255};
-        MaterialLoader l;
-        Material m(c);
-        l.Serialize("Material.ce_mat", &m);
-#endif
-
-#if 0
-        auto test1 = scene->CreateActor("TTV");
+       auto test1 = scene->CreateActor("TTV");
         auto mesh = test1->AddComponent<MeshComponent>();
         test1->GetTransform().Position = {0, 0, 0};
         mesh->GetMesh()->SetMaterial(Material::Configuration());
@@ -87,7 +73,18 @@ namespace Core
 
     void EditorLayer::OnDetach() {}
 
-    void EditorLayer::OnEvent(Event *event) {}
+    void EditorLayer::OnEvent(Event *event)
+    {
+        if (Input::GetButton(Buttons::Right))
+            return;
+
+        if (event->GetType() == EventType::KeyboardButton)
+        {
+            EventKeyboardButton *kb = (EventKeyboardButton *)event->GetData();
+            if (kb->Type == EventKeyboardButton::Press)
+                state.Keybind.OnKeyDown(kb->Key);
+        }
+    }
 
     void EditorLayer::SerializeSettings()
     {
@@ -96,8 +93,25 @@ namespace Core
         ser.Serialize(CE_SETTINGS_PATH);
     }
 
+    void EditorLayer::UpdateWithSettings()
+    {
+        auto target = state.Camera.GetTarget();
+        auto &cam = state.Settings.General.Camera;
+
+        CE_VERIFY(target);
+
+        target->FOV = cam.FOV;
+        state.Camera.Speed = cam.NormalSpeed;
+        state.Camera.FastSpeed = cam.FastSpeed;
+        state.Camera.SlowSpeed = cam.SlowSpeed;
+
+        target->UpdateProjection();
+    }
+
     void EditorLayer::OnUpdate()
     {
+        state.Keybind.Update();
+
         if (state.IsViewportFocused)
             state.Camera.Update();
 
@@ -106,8 +120,8 @@ namespace Core
             Vector2 pos = Input::GetMousePosition() +
                           Vector2(Engine::GetWindow()->GetX(), Engine::GetWindow()->GetY());
 
-            ImVec2 LT = state.Dockspace.ViewportLeftTop;
-            ImVec2 RB = state.Dockspace.ViewportRightBottom;
+            ImVec2 LT = state.Dock.ViewportLeftTop;
+            ImVec2 RB = state.Dock.ViewportRightBottom;
 
             if (pos.x > LT.x && pos.y > LT.y && pos.x < LT.x + RB.x && pos.y < LT.y + RB.y)
                 state.IsViewportFocused = true;
@@ -118,7 +132,10 @@ namespace Core
 
     void EditorLayer::OnImGuiRender()
     {
-        DockspaceBegin();
+        ImGuizmo::BeginFrame();
+
+        state.Dock.Begin();
+
         state.Panels.RenderImGui();
         DockspaceRenderSceneViewport();
         ImGui::Begin("ImGui Style Editor");
@@ -145,53 +162,16 @@ namespace Core
             state.Settings.Theme.Render(save);
             if (save)
                 SerializeSettings();
+
+            state.Settings.General.Render(save);
+            if (save)
+            {
+                SerializeSettings();
+                UpdateWithSettings();
+            }
         }
 
-        DockspaceEnd();
-    }
-
-    // note: dockspace
-    void EditorLayer::DockspaceBegin()
-    {
-        if (state.Dockspace.Fullscreen)
-        {
-            ImGuiViewport *viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(viewport->Pos);
-            ImGui::SetNextWindowSize(viewport->Size);
-            ImGui::SetNextWindowViewport(viewport->ID);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            state.Dockspace.WindowFlags |= ImGuiWindowFlags_NoTitleBar |
-                                           ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-                                           ImGuiWindowFlags_NoMove;
-            state.Dockspace.WindowFlags |=
-                ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-        }
-
-        if (state.Dockspace.Flags & ImGuiDockNodeFlags_PassthruCentralNode)
-            state.Dockspace.WindowFlags |= ImGuiWindowFlags_NoBackground;
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("DockSpace", &state.Dockspace.Open, state.Dockspace.WindowFlags);
-        ImGui::PopStyleVar();
-
-        if (state.Dockspace.Fullscreen)
-            ImGui::PopStyleVar(2);
-
-        // DockSpace
-        ImGuiIO &io = ImGui::GetIO();
-        ImGuiStyle &style = ImGui::GetStyle();
-        float minWinSizeX = style.WindowMinSize.x;
-        style.WindowMinSize.x = 250.0f;
-        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-        {
-            ImGuiID dockspaceId = ImGui::GetID("Dock");
-            ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), state.Dockspace.Flags);
-        }
-
-        style.WindowMinSize.x = minWinSizeX;
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
-        ImGui::PopStyleVar();
+        state.Dock.End();
     }
 
     void EditorLayer::DockspaceRenderSceneViewport()
@@ -207,26 +187,112 @@ namespace Core
             Renderer::Viewport(viewportSize.x, viewportSize.y);
             state.ViewportSize = viewportSize;
         }
-        state.Dockspace.ViewportLeftTop = ImGui::GetWindowPos();
-        state.Dockspace.ViewportRightBottom = ImGui::GetWindowSize();
+
+        state.Dock.ViewportLeftTop = ImGui::GetWindowPos();
+        state.Dock.ViewportRightBottom = ImGui::GetWindowSize();
 
         ImGui::Image((void *)(u64)(Renderer::GetSceneViewportPassID()), viewportSize, ImVec2{0, 1},
                      ImVec2{1, 0});
 
+        if (ImGui::BeginDragDropTarget())
+        {
+
+            if (const ImGuiPayload *load = ImGui::AcceptDragDropPayload("ContentPanelDragDrop"))
+            {
+                const char *path = (const char *)load->Data;
+                std::string ext = StringUtils::GetFilenameExtension(path);
+                if (ext == "ce_scene")
+                    SceneOpen(path);
+            }
+
+            ImGui::EndDragDropTarget();
+        }
+
+        // note: Gizmo stuff
+        {
+            auto panel = (SceneHierarchyPanel *)state.Panels.Panels[0];
+            auto selected = panel->GetSelectedActor();
+            auto camera = CameraSystem::GetActivePerspective();
+            if (selected && camera)
+            {
+                auto &transform = selected->GetTransform();
+                float *data = selected->GetGlobalMatrix().data;
+                float *delta = selected->GetParent()
+                                   ? Matrix4::Invert(selected->GetParent()->GetLocalMatrix()).data
+                                   : NULL;
+
+                float tmp[16];
+                ImGuizmo::RecomposeMatrixFromComponents(
+                    &transform.Position.x, &transform.Rotation.x, &transform.Scale.x, tmp);
+
+                ImGuizmo::SetOrthographic(false);
+                ImGuizmo::SetDrawlist();
+                ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y,
+                                  ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+                ImGuizmo::Manipulate(camera->GetInvertedView().data, camera->GetProjection().data,
+                                     state.CurrentGizmoOperation, ImGuizmo::WORLD, tmp, delta);
+
+                if (Input::GetKey(Keys::T))
+                    state.CurrentGizmoOperation = ImGuizmo::TRANSLATE;
+                if (Input::GetKey(Keys::R))
+                    state.CurrentGizmoOperation = ImGuizmo::ROTATE;
+                if (Input::GetKey(Keys::E))
+                    state.CurrentGizmoOperation = ImGuizmo::SCALE;
+
+                if (ImGuizmo::IsUsing())
+                {
+                    Matrix4 matrix = data;
+                    if (selected->GetParent())
+                        matrix = Matrix4::Multiply(selected->GetLocalMatrix(),
+                                                   delta ? delta : Matrix4::Identity());
+
+                    float matrixTranslation[3], matrixRotation[3], matrixScale[3];
+                    ImGuizmo::DecomposeMatrixToComponents(tmp, matrixTranslation, matrixRotation,
+                                                          matrixScale);
+
+                    transform.Position = {matrixTranslation[0], matrixTranslation[1],
+                                          matrixTranslation[2]};
+                    transform.Rotation = {matrixRotation[0], matrixRotation[1], matrixRotation[2]};
+                    transform.Scale = {matrixScale[0], matrixScale[1], matrixScale[2]};
+                }
+            }
+        }
+
         ImGui::End();
     }
-
-    void EditorLayer::DockspaceEnd() { ImGui::End(); }
 
     void EditorLayer::UI_TopMenuBar()
     {
         if (ImGui::BeginMainMenuBar())
         {
+            if (ImGui::MenuItem("File"))
+                ImGui::OpenPopup("FilePopup");
+
             if (ImGui::MenuItem("Editor"))
                 ImGui::OpenPopup("EditorPopup");
 
+            if (ImGui::BeginPopup("FilePopup"))
+            {
+                if (ImGui::MenuItem("New...", "Ctrl + N"))
+                    SceneNew();
+
+                if (ImGui::MenuItem("Open...", "Ctrl + O"))
+                    SceneOpen();
+
+                if (ImGui::MenuItem("Save...", "Ctrl + S"))
+                    SceneSave();
+
+                if (ImGui::MenuItem("Save As...", "Ctrl + Shift + N"))
+                    SceneSaveAs();
+
+                ImGui::EndPopup();
+            }
+
             if (ImGui::BeginPopup("EditorPopup"))
             {
+                if (ImGui::MenuItem("Settings"))
+                    state.Settings.General.Active = true;
+
                 if (ImGui::MenuItem("Theme"))
                     state.Settings.Theme.Active = true;
 
@@ -236,4 +302,62 @@ namespace Core
             ImGui::EndMainMenuBar();
         }
     }
+
+    void EditorLayer::SceneNew()
+    {
+        // todo: Some kind of scene saving stuff
+        std::string name = std::to_string(UUID().Get());
+        World::Create(name);
+        World::Activate(name);
+        state.ActiveScenePath = "";
+    }
+
+    void EditorLayer::SceneOpen()
+    {
+        std::string path = Platform::OpenFileDialog("*.ce_scene \0*.ce_scene\0");
+        if (!path.empty())
+            SceneOpen(path);
+    }
+
+    void EditorLayer::SceneOpen(const std::string &name)
+    {
+        if (state.ActiveScenePath == name)
+        {
+            CE_LOG("CE_SCENE", Warn, "Scene active already");
+            return;
+        }
+
+        if (World::Exists(name))
+            World::Activate(name);
+        else
+        {
+            World::Create(name);
+            SceneSerializer serializer(World::Get(name));
+            serializer.Deserialize(name);
+            World::Activate(name);
+        }
+
+        state.ActiveScenePath = name;
+    }
+
+    void EditorLayer::SceneSave()
+    {
+        if (state.ActiveScenePath.empty())
+            SceneSaveAs();
+        else
+        {
+            SceneSerializer serializer(World::GetActive());
+            serializer.Serialize(state.ActiveScenePath);
+        }
+    }
+
+    void EditorLayer::SceneSaveAs()
+    {
+        state.ActiveScenePath = Platform::SaveFileDialog("*.ce_scene \0*.ce_scene\0");
+        if (!state.ActiveScenePath.empty())
+            SceneSave();
+    }
+
+    EditorLayer *EditorLayer::GetInstance() { return Instance; }
+
 } // namespace Core

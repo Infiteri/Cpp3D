@@ -22,6 +22,8 @@ namespace Core
 
         void SetTarget(PerspectiveCamera *target);
 
+        inline PerspectiveCamera *GetTarget() { return cam; };
+
         void Update();
     };
 } // namespace Core

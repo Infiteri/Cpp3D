@@ -25,8 +25,6 @@ namespace Core
             ac->Start();
         }
 
-        environment.Sky.SetSkyboxMode("Cubemap.ce_cubemap");
-
         Renderer::SetDirectioanlLightInstance(&environment.Light);
         Renderer::SetSkyInstance(&environment.Sky);
     }
@@ -66,13 +64,21 @@ namespace Core
     void Scene::Stop()
     {
         if (state == State::Stopped || state == State::Uninitialzied)
+        {
+            CE_LOG("CE_SCENE", Warn,
+                   "Calling stop on scene that is alreadyt stopped, nothing done.");
             return;
+        }
+
+        state = State::Stopped;
 
         for (auto ac : actors)
         {
             ac->Stop();
         }
     }
+
+    void Scene::SetName(const std::string &n) { name = n; }
 
     Actor *Scene::CreateActor(const std::string &name)
     {

@@ -58,7 +58,7 @@ namespace Core
 
         InitializeRendererSubsystems();
 
-        state.Post.Add("EngineAssets/Shaders/Post.glsl", false);
+        state.Post.Add("EngineAssets/Shaders/Post.glsl", true);
 
         state.Screen.Create();
 

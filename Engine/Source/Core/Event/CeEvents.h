@@ -16,7 +16,15 @@ namespace Core
 
     struct EventKeyboardButton
     {
+        enum Type
+        {
+            Press,
+            Repeat,
+            Release
+        };
+
         Keys Key;
+        Type Type = Press;
     };
 
     struct EventResize
