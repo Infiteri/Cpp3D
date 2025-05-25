@@ -1,10 +1,12 @@
 #include "Renderer.h"
+#include "Base.h"
 #include "Buffer/Buffer.h"
 #include "Buffer/FrameBuffer.h"
 #include "Buffer/VertexArray.h"
 #include "Camera/CameraSystem.h"
 #include "Camera/PerspectiveCamera.h"
 #include "Core/Engine.h"
+#include "Core/Logger.h"
 #include "Light/DirectionalLight.h"
 #include "Light/Light.h"
 #include "Material/MaterialSystem.h"
@@ -58,25 +60,16 @@ namespace Core
 
         InitializeRendererSubsystems();
 
-        state.Post.Add("EngineAssets/Shaders/Post.glsl", true);
+        state.Post.Add("EngineAssets/Shaders/Post.glsl", false);
 
         state.Screen.Create();
 
         CameraSystem::AddPerspectiveCamera("Renderer",
                                            {90, state.ScreenViewport.GetAspect(), 0.01f, 1000.0f});
         CameraSystem::ActivatePerspectiveCamera("Renderer");
-        CameraSystem::GetActivePerspective()->SetPosition({0, 0, 5});
+        CameraSystem::GetActivePerspective()->SetPosition({0, 0, 0});
 
         glEnable(GL_MULTISAMPLE);
-
-        CubemapConfiguration config;
-        config.Right = "Assets/Lycksele3/posx.jpg";
-        config.Left = "Assets/Lycksele3/negx.jpg";
-        config.Top = "Assets/Lycksele3/posy.jpg";
-        config.Bottom = "Assets/Lycksele3/negy.jpg";
-        config.Front = "Assets/Lycksele3/posz.jpg";
-        config.Back = "Assets/Lycksele3/negz.jpg";
-        // sky.SetSkyboxMode(config);
     }
 
     void Renderer::Shutdown()
@@ -124,7 +117,7 @@ namespace Core
 
         state.Screen.Begin();
 
-        glClearColor(1, 1, 1, 1);
+        glClearColor(0, 1, 1, 1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glEnable(GL_BLEND);
@@ -197,6 +190,7 @@ namespace Core
         state.Skybox.RenderCubemap(texture);
     }
 
+    // todo: Clean stuff up here
     void Renderer::RenderCubemapTexture(CubemapTexture *texture, VertexArray *array, Shader *shader,
                                         PerspectiveCamera *camera)
     {
@@ -206,7 +200,6 @@ namespace Core
         array->Bind();
         shader->Use();
         UploadCameraToShader(shader, camera);
-        shader->Mat4(Matrix4::Translate(camera->GetPosition()), "uModel");
         texture->Use();
         shader->Int(0, "uSkybox");
         array->GetVertexBuffer()->Bind();
@@ -221,9 +214,30 @@ namespace Core
         shader->Use();
         shader->Mat4(camera->GetProjection(), "uProjection");
         shader->Mat4(camera->GetInvertedView(), "uView");
+        shader->Mat4(Matrix4::Translate(camera->GetPosition()), "uModel");
         shader->Vec3(camera->GetPosition(), "uCameraPosition");
     }
 
+    void Renderer::RenderCubemapShader(Shader *shader)
+    {
+        CE_VERIFY(shader);
+
+        auto array = state.Skybox.array;
+        auto camera = CameraSystem::GetActivePerspective();
+
+        glDepthMask(false);
+
+        array->Bind();
+        shader->Use();
+        UploadCameraToShader(shader, camera);
+        array->GetVertexBuffer()->Bind();
+        array->GetVertexBuffer()->Draw();
+
+        glDepthMask(true);
+    }
+
     u32 Renderer::GetSceneViewportPassID() { return state.Screen.PostBuffer->GetRenderPass(0)->Id; }
+
+    void Renderer::ReloadPostProcessShaders() { state.Post.ReloadShaders(); }
 
 } // namespace Core

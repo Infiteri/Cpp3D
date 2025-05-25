@@ -2,6 +2,7 @@
 
 #include "Base.h"
 #include "Window/Window.h"
+#include <memory>
 
 namespace Core
 {
@@ -10,7 +11,7 @@ namespace Core
     public:
         struct State
         {
-            Window *Window;
+            std::unique_ptr<Window> Window;
         };
 
     public:
@@ -29,6 +30,9 @@ namespace Core
 
         static void Shutdown();
 
+        /// @brief: Returns a pointer to the active Window.
+        /// @note: The Engine is the owner of this object. Do not call 'delete' on this pointer.
+        /// @todo: Return a shared pointer to the window so that calling 'delete' is not possible.
         static Window *GetWindow();
     };
 } // namespace Core

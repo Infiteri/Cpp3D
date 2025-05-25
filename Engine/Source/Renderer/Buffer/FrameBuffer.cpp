@@ -1,4 +1,5 @@
 #include "FrameBuffer.h"
+#include "Base.h"
 #include "Core/Logger.h"
 
 #include <glad/glad.h>
@@ -19,6 +20,34 @@ namespace Core
 
         case FrameBuffer::Depth:
             return GL_DEPTH24_STENCIL8;
+            break;
+
+        case FrameBuffer::R32I:
+            return GL_RED_INTEGER;
+            break;
+        }
+
+        return GL_RGB;
+    }
+
+    static inline GLenum FormatToGL(FrameBuffer::TextureType type)
+    {
+        switch (type)
+        {
+        case FrameBuffer::Rgba8:
+            return GL_RGBA;
+            break;
+
+        case FrameBuffer::Rgb:
+            return GL_RGB;
+            break;
+
+        case FrameBuffer::Depth:
+            return GL_DEPTH24_STENCIL8;
+            break;
+
+        case FrameBuffer::R32I:
+            return GL_R32I;
             break;
         }
 
@@ -62,7 +91,7 @@ namespace Core
                 glGenTextures(1, &pass->Id);
                 glBindTexture(GL_TEXTURE_2D, pass->Id);
 
-                glTexImage2D(GL_TEXTURE_2D, 0, ClearToGL(pass->Type), state.Width, state.Height, 0,
+                glTexImage2D(GL_TEXTURE_2D, 0, FormatToGL(pass->Type), state.Width, state.Height, 0,
                              ClearToGL(pass->Type), GL_UNSIGNED_BYTE, nullptr);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -112,6 +141,18 @@ namespace Core
             pass.Id = 0;
             pass.Index = 0;
         }
+    }
+
+    int FrameBuffer::ReadPixel(u32 attachment, int x, int y)
+    {
+        // todo: Finish
+        if (!(attachment < state.Passes.size()))
+            return -1;
+
+        glReadBuffer(GL_COLOR_ATTACHMENT0 + attachment);
+        int value = -1;
+        glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &value);
+        return value;
     }
 
 } // namespace Core

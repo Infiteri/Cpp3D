@@ -1,7 +1,10 @@
 #pragma once
 
+#include "Core/Data/CeDataSet.h"
 #include "Math/Vector.h"
 #include "Renderer/Color.h"
+#include "Renderer/Material/Material.h"
+#include "Renderer/Texture/Texture2D.h"
 #include "Scene/Actor.h"
 #include <imgui.h>
 #include <string>
@@ -16,6 +19,10 @@ namespace Core
         void ImGuiVector3(const char *label, Vector3 &vec);
         void ImGuiVector3Styled(const char *label, Vector3 &vec, float defaultValue = 0.0f);
         void ImGuiTransformEdit(Transform &transform);
+
+        void RenderMaterialConfig(Material::Configuration &config);
+
+        void ImGuiCeDataSet(CeDataSet *set);
 
         bool StringIsImageExtension(const std::string &ext);
 

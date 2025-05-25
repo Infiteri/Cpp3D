@@ -1,4 +1,6 @@
 #include "Image.h"
+#include "Core/Util/StringUtils.h"
+#include "Resource/CeImageLoader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -13,7 +15,15 @@ namespace Core
     {
         this->name = name;
         isValid = true;
-        data = stbi_load(name.c_str(), &width, &height, &channels, 0);
+
+        std::string ext = StringUtils::GetFilenameExtension(name);
+        if (ext == "ce_image")
+        {
+            CeImageLoader loader;
+            data = (u8 *)loader.LoadCeImage(name, &width, &height, &channels);
+        }
+        else
+            data = stbi_load(name.c_str(), &width, &height, &channels, 0);
 
         if (!data)
         {
@@ -27,9 +37,14 @@ namespace Core
 
     void Image::DestroyData()
     {
-        if (data)
-            stbi_image_free(data);
+        if (!data)
+            return;
 
+        std::string ext = StringUtils::GetFilenameExtension(name);
+        if (ext == "ce_image")
+            delete[] data;
+        else
+            stbi_image_free(data);
         data = 0;
     }
 

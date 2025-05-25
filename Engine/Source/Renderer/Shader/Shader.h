@@ -29,6 +29,8 @@ namespace Core
 
         void Vec3(const Vector3 &vec, const char *name);
 
+        void Vec2(const Vector2 &vec, const char *name);
+
         void Mat4(const Matrix4 &matrix, const char *name);
 
         void Int(int i, const char *name);

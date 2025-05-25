@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Core/Logger.h"
 #include "EditorLayer.h"
+#include "EditorToast.H"
 
 namespace Core
 {

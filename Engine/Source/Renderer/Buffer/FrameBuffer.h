@@ -12,7 +12,8 @@ namespace Core
         {
             Depth,
             Rgba8,
-            Rgb
+            Rgb,
+            R32I
         };
 
         struct RenderPass
@@ -46,6 +47,8 @@ namespace Core
         void Unbind();
         void Create();
         void Destroy();
+
+        int ReadPixel(u32 attachment, int x, int y);
 
         void Resize(int w, int h);
 

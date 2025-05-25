@@ -123,11 +123,6 @@ namespace Core
     void Shader::Vec4(const Color &color, const char *name)
     {
         GLint location = GetUniLoc(name);
-        if (location == -1)
-        {
-            return;
-        }
-
         Color normal = color.Normalized();
         glUniform4f(location, normal.r, normal.g, normal.b, normal.a);
     }
@@ -135,16 +130,16 @@ namespace Core
     void Shader::Vec3(const Vector3 &vec, const char *name)
     {
         GLint location = GetUniLoc(name);
-        if (location == -1)
-        {
-            return;
-        }
-
         glUniform3f(location, vec.x, vec.y, vec.z);
     }
     void Shader::Mat4(const Matrix4 &matrix, const char *name)
     {
         glUniformMatrix4fv(GetUniLoc(name), 1, false, matrix.data);
+    }
+
+    void Shader::Vec2(const Vector2 &vec, const char *name)
+    {
+        glUniform2f(GetUniLoc(name), vec.x, vec.y);
     }
 
     void Shader::Int(int i, const char *name) { glUniform1i(GetUniLoc(name), i); }

@@ -9,6 +9,8 @@
 #include "Resource/CubemapLoader.h"
 #include "Resource/MaterialLoader.h"
 
+#include <algorithm>
+#include <cstdlib>
 #include <imgui.h>
 
 namespace Core
@@ -63,73 +65,8 @@ namespace Core
         EditorUtils::ImGuiString("File Path", File);
 
         ImGui::SeparatorText("Material Configuration");
-        EditorUtils::ImGuiColor("Color", Config.Color);
 
-        // hack: This is hacked in right now, todo better texture editing
-        auto DrawTextureEditor =
-            [](const char *label, Texture2D *&textureSlot, std::string &texturePathRef)
-        {
-            if (ImGui::TreeNode(label))
-            {
-                if (textureSlot == nullptr)
-                    textureSlot = TextureSystem::GetDefault();
-
-                ImGui::Image((void *)(u64)textureSlot->GetID(),
-                             {100, 100}); // todo: Size other than 100
-
-                if (ImGui::BeginDragDropTarget())
-                {
-                    if (const ImGuiPayload *payload =
-                            ImGui::AcceptDragDropPayload("ContentPanelDragDrop"))
-                    {
-                        const char *path = (const char *)payload->Data;
-                        std::string ext = StringUtils::GetFilenameExtension(path);
-
-                        if (EditorUtils::StringIsImageExtension(ext))
-                        {
-                            if (textureSlot != TextureSystem::GetDefault() &&
-                                textureSlot != nullptr)
-                                delete textureSlot;
-
-                            textureSlot = new Texture2D();
-                            textureSlot->Load(path);
-                            texturePathRef = path;
-                        }
-                    }
-                    ImGui::EndDragDropTarget();
-                }
-
-                if (ImGui::Button("Load"))
-                {
-                    std::string src = Platform::OpenFileDialog("Image \0*.png;*.jpg;*jpeg\0");
-                    if (!src.empty())
-                    {
-                        if (textureSlot != TextureSystem::GetDefault() && textureSlot != nullptr)
-                            delete textureSlot;
-
-                        textureSlot = new Texture2D();
-                        textureSlot->Load(src);
-                        texturePathRef = src;
-                    }
-                }
-
-                ImGui::SameLine();
-
-                if (ImGui::Button("Clear"))
-                {
-                    if (textureSlot != TextureSystem::GetDefault())
-                        delete textureSlot;
-
-                    textureSlot = TextureSystem::GetDefault();
-                    texturePathRef.clear();
-                }
-
-                ImGui::TreePop();
-            }
-        };
-
-        DrawTextureEditor("Color Texture", Texture, Config.ColorTexture);
-        DrawTextureEditor("Normal Texture", NormalTexture, Config.NormalTexture);
+        EditorUtils::RenderMaterialConfig(Config);
 
         if (ImGui::Button("Create"))
         {
@@ -279,6 +216,16 @@ namespace Core
                 state.CreateCubemap.Active = true;
             }
 
+            if (ImGui::MenuItem("Open in File Explorer"))
+            {
+                std::string cd = state.CurrentDirectroy;
+                // note: replace forward slashes with backshot backward slashes
+                // note: dear future employer if you see this, 'backshot slashes' is fun for some
+                // reason
+
+                std::replace(cd.begin(), cd.end(), '/', '\\');
+                system((std::string("explorer ") + cd).c_str());
+            }
             ImGui::End();
         }
 

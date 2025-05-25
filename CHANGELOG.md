@@ -76,3 +76,9 @@
 4. Added more functionality to Content Browser Panel
 5. Added Camera settings
 6. Added more colors to the theme editor
+
+
+# 0.1.0 - 25.05.2025
+
+1. Refactored Editor code
+2. Added more Editor functionality

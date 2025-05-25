@@ -1,4 +1,5 @@
 #include "PostProcessor.h"
+#include "Core/Logger.h"
 #include "Renderer/Shader/ShaderSystem.h"
 
 namespace Core
@@ -10,10 +11,13 @@ namespace Core
     void PostProcessor::Add(const std::string &name, bool enabled)
     {
         if (Exists(name))
+        {
             shaders[name].Enabled = enabled;
+            return;
+        }
 
         shaders[name] = {};
-        shaders[name].Shd = ShaderSystem::Get(name);
+        shaders[name].Shd = new Shader(name);
         shaders[name].Enabled = enabled;
     }
 
@@ -30,13 +34,22 @@ namespace Core
         if (!Exists(name))
             return;
 
-        ShaderSystem::Remove(name);
+        delete shaders[name].Shd;
         shaders.erase(name);
     }
 
     bool PostProcessor::Exists(const std::string &name)
     {
         return shaders.find(name) != shaders.end();
+    }
+
+    void PostProcessor::ReloadShaders()
+    {
+        for (auto &[name, entry] : shaders)
+        {
+            delete entry.Shd;
+            entry.Shd = new Shader(name);
+        }
     }
 
     std::vector<Shader *> PostProcessor::GetEnabledShaders()

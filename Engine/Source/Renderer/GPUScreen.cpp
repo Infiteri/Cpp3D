@@ -35,6 +35,7 @@ namespace Core
             config.Width = Renderer::GetViewport().Width;
             config.Height = Renderer::GetViewport().Height;
             config.Passes.push_back({FrameBuffer::Rgb});
+            config.Passes.push_back({FrameBuffer::Depth});
             PostBuffer = new FrameBuffer(config);
         }
 

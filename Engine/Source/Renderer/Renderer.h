@@ -19,7 +19,7 @@ namespace Core
         inline float GetAspect() { return (float)Width / (float)Height; };
     };
 
-    class Renderer
+    class CE_API Renderer
     {
     public:
         struct State
@@ -51,10 +51,13 @@ namespace Core
         static void SetSkyInstance(Sky *sky);
         static void SetDirectioanlLightInstance(DirectionalLight *light);
 
+        static void ReloadPostProcessShaders();
+
         static void BeginFrame();
         static void Render();
         static void EndFrame();
 
+        static void RenderCubemapShader(Shader *shader);
         static void RenderCubemapTexture(CubemapTexture *texture);
         static void RenderCubemapTexture(CubemapTexture *texture, VertexArray *array,
                                          Shader *shader, PerspectiveCamera *camera);

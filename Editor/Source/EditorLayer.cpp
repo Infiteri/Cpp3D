@@ -8,8 +8,14 @@
 #include "Core/Logger.h"
 #include "Core/Util/StringUtils.h"
 #include "EditorSettings.h"
+#include "EditorToast.H"
+#include "EditorUtils.h"
 #include "Renderer/Camera/CameraSystem.h"
 #include "Renderer/Renderer.h"
+#include "Renderer/Texture/CubemapTexture.h"
+#include "Resource/CeImageLoader.h"
+#include "Resource/CubemapLoader.h"
+#include "Resource/MaterialLoader.h"
 #include "Scene/Scene.h"
 #include "Scene/Serialzier/SceneSerializer.h"
 #include "Scene/World.h"
@@ -17,6 +23,7 @@
 #include "Platform/Platform.h"
 
 #include "Panel/SceneHierarchyPanel.h"
+#include "yaml-cpp/emittermanip.h"
 
 #include <ImGuizmo.h>
 #include <imgui.h>
@@ -36,10 +43,6 @@ namespace Core
         CE_DEFINE_LOG_CATEGORY("CE_EDITOR", "Editor");
 
         state.Camera = CameraSystem::GetActivePerspective();
-        state.Camera.Sensitivity = 0.005;
-
-        // todo: From some kind of configuration file
-        ImGuiLayer::SetFont("EngineAssets/Font/Open_Sans/static/OpenSans-Bold.ttf", 12);
 
         state.Settings.RegisterThemeColors();
 
@@ -50,6 +53,8 @@ namespace Core
             ser.Deserialize(CE_SETTINGS_PATH);
             UpdateWithSettings();
         }
+
+        SetupFonts();
 
         // todo: File
         Scene *scene = World::Create("Test");
@@ -66,8 +71,7 @@ namespace Core
         mesh->GetMesh()->GetMaterial()->SetColorTexture("CM.jfif");
 
 #else
-        SceneSerializer serializer{World::GetActive()};
-        serializer.Deserialize("Scene.ce_scene");
+        SceneOpen("Scene.ce_scene");
 #endif
     }
 
@@ -84,6 +88,19 @@ namespace Core
             if (kb->Type == EventKeyboardButton::Press)
                 state.Keybind.OnKeyDown(kb->Key);
         }
+    }
+
+    void EditorLayer::SetupFonts()
+    {
+        auto &io = ImGui::GetIO();
+        io.Fonts->Clear();
+        auto &font = state.Settings.General;
+
+        ImFont *mainFont =
+            io.Fonts->AddFontFromFileTTF(font.MainFont.File.c_str(), font.MainFont.Size);
+        io.FontDefault = mainFont;
+        io.Fonts->AddFontFromFileTTF(font.ToastFont.File.c_str(), font.ToastFont.Size);
+        io.Fonts->Build();
     }
 
     void EditorLayer::SerializeSettings()
@@ -104,6 +121,7 @@ namespace Core
         state.Camera.Speed = cam.NormalSpeed;
         state.Camera.FastSpeed = cam.FastSpeed;
         state.Camera.SlowSpeed = cam.SlowSpeed;
+        state.Camera.Sensitivity = cam.Sensitivity;
 
         target->UpdateProjection();
     }
@@ -134,6 +152,8 @@ namespace Core
     {
         ImGuizmo::BeginFrame();
 
+        ToastMessage::OnImGuiRender();
+
         state.Dock.Begin();
 
         state.Panels.RenderImGui();
@@ -153,6 +173,9 @@ namespace Core
             serializer.Serialize("Scene.ce_scene");
         }
 
+        if (ImGui::Button("Reload post"))
+            Renderer::ReloadPostProcessShaders();
+
         ImGui::End();
 
         UI_TopMenuBar();
@@ -169,6 +192,8 @@ namespace Core
                 SerializeSettings();
                 UpdateWithSettings();
             }
+
+            state.Popup.OnImGuiRender();
         }
 
         state.Dock.End();
@@ -194,6 +219,7 @@ namespace Core
         ImGui::Image((void *)(u64)(Renderer::GetSceneViewportPassID()), viewportSize, ImVec2{0, 1},
                      ImVec2{1, 0});
 
+        // todo: Make this a function
         if (ImGui::BeginDragDropTarget())
         {
 
@@ -203,6 +229,44 @@ namespace Core
                 std::string ext = StringUtils::GetFilenameExtension(path);
                 if (ext == "ce_scene")
                     SceneOpen(path);
+                else if (ext == "ce_cubemap")
+                {
+                    auto &cubemap = state.Popup.Cubemap;
+                    cubemap.Active = true;
+                    cubemap.ConfigPath = path;
+                    CubemapLoader loader;
+                    CubemapConfiguration config;
+                    loader.Deserialize(config, path);
+
+                    cubemap.Config = config;
+
+                    cubemap.Textures[0].Destroy();
+                    cubemap.Textures[0].Load(config.Right);
+
+                    cubemap.Textures[1].Destroy();
+                    cubemap.Textures[1].Load(config.Left);
+
+                    cubemap.Textures[2].Destroy();
+                    cubemap.Textures[2].Load(config.Top);
+
+                    cubemap.Textures[3].Destroy();
+                    cubemap.Textures[3].Load(config.Bottom);
+
+                    cubemap.Textures[4].Destroy();
+                    cubemap.Textures[4].Load(config.Front);
+
+                    cubemap.Textures[5].Destroy();
+                    cubemap.Textures[5].Load(config.Back);
+                }
+                else if (ext == "ce_mat")
+                {
+                    auto &material = state.Popup.Material;
+                    material.Active = true;
+                    material.Path = path;
+
+                    MaterialLoader loader;
+                    loader.Deserialize(path, material.Config);
+                }
             }
 
             ImGui::EndDragDropTarget();
@@ -271,6 +335,9 @@ namespace Core
             if (ImGui::MenuItem("Editor"))
                 ImGui::OpenPopup("EditorPopup");
 
+            if (ImGui::MenuItem("Other"))
+                ImGui::OpenPopup("OtherPopup");
+
             if (ImGui::BeginPopup("FilePopup"))
             {
                 if (ImGui::MenuItem("New...", "Ctrl + N"))
@@ -299,12 +366,25 @@ namespace Core
                 ImGui::EndPopup();
             }
 
+            if (ImGui::BeginPopup("OtherPopup"))
+            {
+                if (ImGui::MenuItem("Ce Image Convertor"))
+                {
+                    ToastMessage::Add("Opening Image Convertor");
+                    state.Popup.Image.Active = true;
+                }
+
+                ImGui::EndPopup();
+            }
+
             ImGui::EndMainMenuBar();
         }
     }
 
     void EditorLayer::SceneNew()
     {
+        ToastMessage::Add("New Scene");
+
         // todo: Some kind of scene saving stuff
         std::string name = std::to_string(UUID().Get());
         World::Create(name);
@@ -337,6 +417,8 @@ namespace Core
             World::Activate(name);
         }
 
+        ToastMessage::Add("Opened Scene");
+
         state.ActiveScenePath = name;
     }
 
@@ -349,6 +431,8 @@ namespace Core
             SceneSerializer serializer(World::GetActive());
             serializer.Serialize(state.ActiveScenePath);
         }
+
+        ToastMessage::Add("Saved Scene");
     }
 
     void EditorLayer::SceneSaveAs()

@@ -5,6 +5,7 @@
 #include "EditorCamera.h"
 #include "EditorDock.h"
 #include "EditorKeybind.h"
+#include "EditorPopup.h"
 #include "EditorSettings.h"
 #include "ImGuizmo.h"
 #include "Panel/Panel.h"
@@ -22,6 +23,8 @@ namespace Core
         struct State
         {
             PanelSystem Panels;
+
+            EditorPopupSystem Popup;
 
             EditorDock Dock;
 
@@ -49,6 +52,8 @@ namespace Core
 
         void SerializeSettings();
         void UpdateWithSettings();
+
+        void SetupFonts();
 
         void OnEvent(Event *event);
 

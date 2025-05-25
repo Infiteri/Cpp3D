@@ -39,8 +39,8 @@ namespace Core
             auto sky = &env->Sky;
 
             {
-                const int ammount = 2;
-                const char *selections[] = {"Color", "Skybox"};
+                const int ammount = 3;
+                const char *selections[] = {"Color", "Skybox", "Shader"};
                 const char *current = selections[(int)sky->GetMode()];
 
                 if (ImGui::BeginCombo("Type", current))
@@ -59,13 +59,22 @@ namespace Core
                                 sky->SetColorMode({});
                                 break;
 
+                            case SkyMode::Shader:
+                            {
+                                std::string src = Platform::OpenFileDialog(".glsl \0*.glsl\0");
+                                if (!src.empty())
+                                    sky->SetShaderMode(src);
+                            }
+                            break;
+
                             case SkyMode::Skybox:
+                            {
                                 std::string src =
                                     Platform::OpenFileDialog(".ce_cubemap \0*.ce_cubemap\0");
                                 if (!src.empty())
                                     sky->SetSkyboxMode(src);
-
-                                break;
+                            }
+                            break;
                             }
                         }
 
@@ -82,7 +91,7 @@ namespace Core
                 EditorUtils::ImGuiColor("Color", sky->GetColor());
                 break;
 
-            case Core::SkyMode::Skybox:
+            case SkyMode::Skybox:
                 if (ImGui::Button("Load"))
                 {
                     std::string src = Platform::OpenFileDialog(".ce_cubemap \0*.ce_cubemap\0");
@@ -104,6 +113,39 @@ namespace Core
                     }
 
                     ImGui::EndDragDropTarget();
+                }
+
+                break;
+
+            case SkyMode::Shader:
+                if (ImGui::Button("Load"))
+                {
+                    std::string src = Platform::OpenFileDialog(".glsl \0*.glsl\0");
+
+                    if (!src.empty())
+                        sky->SetShaderMode(src);
+                }
+
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload *payload =
+                            ImGui::AcceptDragDropPayload("ContentPanelDragDrop"))
+                    {
+                        const char *path = (const char *)payload->Data;
+                        std::string ext = StringUtils::GetFilenameExtension(path);
+
+                        if (ext == "glsl")
+                            sky->SetShaderMode(path);
+                    }
+
+                    ImGui::EndDragDropTarget();
+                }
+
+                if (ImGui::TreeNode("Shader Data"))
+                {
+                    EditorUtils::ImGuiCeDataSet(sky->GetShaderDataSet());
+
+                    ImGui::TreePop();
                 }
 
                 break;

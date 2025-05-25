@@ -29,11 +29,21 @@ namespace Core
     {
         float FOV = 90;
         float NormalSpeed = 1.0f, FastSpeed = 2.0f, SlowSpeed = 0.5f;
+        float Sensitivity = 0.005;
+    };
+
+    struct FontPack
+    {
+        std::string File = "EngineAssets/Font/Open_Sans/static/OpenSans-Bold.ttf";
+        float Size = 12.0f;
     };
 
     struct GeneralSettings
     {
         CameraSettings Camera;
+
+        FontPack MainFont;
+        FontPack ToastFont;
 
         bool Active = false;
         void Render(bool &wantsSave);

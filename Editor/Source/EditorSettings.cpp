@@ -4,6 +4,10 @@
 #include "Core/Layer/ImGuiLayer.h"
 #include "Core/Logger.h"
 #include "Core/Serializer/CeSerializer.h"
+#include "EditorTextureSystem.h"
+#include "EditorUtils.h"
+
+#include "Platform/Platform.h"
 #include "imgui.h"
 #include "yaml-cpp/emitter.h"
 #include "yaml-cpp/emittermanip.h"
@@ -154,25 +158,71 @@ namespace Core
         ImGui::End();
     }
 
+    static void StringDragDrop(std::string &str)
+    {
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ContentPanelDragDrop"))
+            {
+                str = (const char *)payload->Data;
+            }
+
+            ImGui::EndDragDropTarget();
+        }
+    }
+
+    static void FontFileButton(std::string &str, int id = 0)
+    {
+        ImGui::SameLine();
+
+        ImGui::PushID(id);
+        const ImVec2 size{10, 10};
+
+        if (ImGui::ImageButton(
+                (void *)(u64)EditorTextureSystem::GetTexID("EngineAssets/Icons/folder.png"), size))
+        {
+            std::string src = Platform::OpenFileDialog(
+                "Font Files (*.ttf;*.otf)\0*.ttf;*.otf\0All Files (*.*)\0*.*\0");
+            if (!src.empty())
+                str = src;
+        }
+
+        ImGui::PopID();
+    }
+
+    static void FontEditGUI(FontPack &pack, const std::string &type = "")
+    {
+        // note: INPUT_FIELD BUTTON INPUT_TEXT
+        std::string ffs = type + " Font File";
+        EditorUtils::ImGuiString(("##" + ffs).c_str(), pack.File);
+        ImGui::SameLine();
+        FontFileButton(pack.File);
+        ImGui::SameLine();
+        ImGui::Text(ffs.c_str());
+        StringDragDrop(pack.File);
+        ImGui::DragFloat((type + " Font Size").c_str(), &pack.Size, 0.01f, 0.01f);
+    }
+
     void GeneralSettings::Render(bool &wantsSave)
     {
         wantsSave = false;
         if (!Active)
             return;
 
-        float margin = 50.0f;
-
-        ImGui::SetNextWindowPos({margin, margin});
-        ImGui::SetNextWindowSize({Engine::GetWindow()->GetWidth() - (margin + 5),
-                                  Engine::GetWindow()->GetHeight() - (margin + 5)});
-
         ImGui::Begin("Settings");
+
+        ImGui::SeparatorText("Fonts");
+
+        FontEditGUI(MainFont, "Main");
+        FontEditGUI(ToastFont, "Toast");
+
         ImGui::SeparatorText("Camera");
 
         ImGui::DragFloat("FOV", &Camera.FOV, 0.02f, 0.01f);
         ImGui::DragFloat("Normal Speed", &Camera.NormalSpeed, 0.02f, 0.01f);
         ImGui::DragFloat("Fast Speed", &Camera.FastSpeed, 0.02f, 0.01f);
         ImGui::DragFloat("Slow Speed", &Camera.SlowSpeed, 0.02f, 0.01f);
+        ImGui::DragFloat("Mouse Sensitivity", &Camera.Sensitivity, 0.02f, 0.01f);
 
         if (ImGui::Button("Ok"))
         {
@@ -193,7 +243,13 @@ namespace Core
         settings = target;
     }
 
-    // static void SerializeImGuiColor(YAML::Emitter& out, )
+    static void SerializeFontPack(FontPack &pack, const char *label, YAML::Emitter &out)
+    {
+        out << YAML::Key << label << YAML::BeginMap;
+        CE_SERIALIZE_FIELD("Size", pack.Size);
+        CE_SERIALIZE_FIELD("File", pack.File);
+        out << YAML::EndMap;
+    }
 
     void EditorSettingsSerializer::Serialize(const std::string &path)
     {
@@ -216,11 +272,17 @@ namespace Core
 
         out << YAML::EndMap;
 
+        out << YAML::Key << "Font" << YAML::Value << YAML::BeginMap;
+        SerializeFontPack(settings->General.MainFont, "Main", out);
+        SerializeFontPack(settings->General.ToastFont, "Toast", out);
+        out << YAML::EndMap;
+
         out << YAML::Key << "Camera" << YAML::Value << YAML::BeginMap;
         CE_SERIALIZE_FIELD("FOV", settings->General.Camera.FOV);
         CE_SERIALIZE_FIELD("NormalSpeed", settings->General.Camera.NormalSpeed);
         CE_SERIALIZE_FIELD("FastSpeed", settings->General.Camera.FastSpeed);
         CE_SERIALIZE_FIELD("SlowSpeed", settings->General.Camera.SlowSpeed);
+        CE_SERIALIZE_FIELD("Sensitivity", settings->General.Camera.Sensitivity);
         out << YAML::EndMap;
 
         out << YAML::EndMap;
@@ -284,6 +346,19 @@ namespace Core
         settings->General.Camera.NormalSpeed = camera["NormalSpeed"].as<float>();
         settings->General.Camera.FastSpeed = camera["FastSpeed"].as<float>();
         settings->General.Camera.SlowSpeed = camera["SlowSpeed"].as<float>();
+        settings->General.Camera.Sensitivity = camera["Sensitivity"].as<float>();
+
+        auto font = data["EditorSettings"]["Font"];
+        if (!font)
+        {
+            CE_LOG("CE_EDITOR", Error, "Unable to deserialize editor settings, no font node.");
+            return;
+        }
+
+        settings->General.MainFont.Size = font["Main"]["Size"].as<float>();
+        settings->General.MainFont.File = font["Main"]["File"].as<std::string>();
+        settings->General.ToastFont.Size = font["Toast"]["Size"].as<float>();
+        settings->General.ToastFont.File = font["Toast"]["File"].as<std::string>();
     }
 } // namespace Core
 //

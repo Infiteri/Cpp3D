@@ -1,4 +1,5 @@
 #include "Engine.h"
+#include "Core/Data/CeData.h"
 #include "Core/Event/EventSystem.h"
 #include "Core/Layer/Layer.h"
 #include "Core/Layer/LayerStack.h"
@@ -11,6 +12,7 @@
 
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <memory>
 
 namespace Core
 {
@@ -41,7 +43,7 @@ namespace Core
 
         Window::Configuration config;
         config.Size = Window::Windowed;
-        state.Window = new Window(config);
+        state.Window = std::make_unique<Window>(config);
 
         InitializeSubsystems();
     }
@@ -76,9 +78,8 @@ namespace Core
         LayerStack::Shutdown();
         EventSystem::Shutdown();
         World::Shutdown();
-        delete state.Window;
     }
 
-    Window *Engine::GetWindow() { return state.Window; }
+    Window *Engine::GetWindow() { return state.Window.get(); }
 
 } // namespace Core

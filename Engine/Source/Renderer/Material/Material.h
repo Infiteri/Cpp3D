@@ -89,5 +89,6 @@ namespace Core
         inline const std::string &GetName() { return state.Name; };
         inline Texture2D *GetColorTexture() { return colorTexture.Tex; };
         inline Texture2D *GetNormalTexture() { return normalTexture.Tex; };
+        inline Material::Configuration &GetState() { return state; };
     };
 } // namespace Core

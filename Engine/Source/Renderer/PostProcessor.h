@@ -29,6 +29,8 @@ namespace Core
 
         bool Exists(const std::string &name);
 
+        void ReloadShaders();
+
         std::vector<Shader *> GetEnabledShaders();
         Shader *Get(const std::string &name);
     };

@@ -1,4 +1,7 @@
 #include "EditorUtils.h"
+#include "Core/Data/CeData.h"
+#include "Core/Util/StringUtils.h"
+#include "EditorTextureSystem.h"
 #include "imgui.h"
 
 #include <cstring>
@@ -56,6 +59,8 @@ namespace Core
             if (ext == "jpg")
                 return true;
             if (ext == "jpeg")
+                return true;
+            if (ext == "ce_image")
                 return true;
             return false;
         }
@@ -126,6 +131,139 @@ namespace Core
             ImGuiVector3Styled("Position", transform.Position);
             ImGuiVector3Styled("Rotation", transform.Rotation);
             ImGuiVector3Styled("Scale", transform.Scale, 1.0);
+        }
+
+        void ImGuiCeDataSet(CeDataSet *set)
+        {
+
+            if (ImGui::Button("Add"))
+            {
+                set->Add("Data");
+                return;
+            }
+            int i = 0;
+            for (auto &[name, data] : set->GetDataSet())
+            {
+                if (!data)
+                    return;
+
+                if (ImGui::TreeNodeEx((void *)(u64)(u32)i, 0, data->GetName().c_str()))
+                {
+                    {
+                        std::string n = data->GetName();
+                        if (ImGuiString("Name", n))
+                            data->SetName(n);
+                    }
+
+                    const int maxSelections = 5;
+                    const char *selections[maxSelections] = {"Vec2", "Vec3", "Vec4", "Color",
+                                                             "Float"};
+                    const char *current = selections[(int)data->GetType() - 1];
+
+                    {
+                        if (ImGui::BeginCombo("Data Type", current))
+                        {
+                            for (int i = 0; i < maxSelections; i++)
+                            {
+                                bool isSelected = (current == selections[i]);
+
+                                if (ImGui::Selectable(selections[i], isSelected))
+                                {
+                                    current = selections[i];
+                                    data->_DestroyOnType();
+                                    data->SetType((CeDataType)(i + 1));
+                                    data->_SetupDefaultOnType();
+                                }
+
+                                if (isSelected)
+                                    ImGui::SetItemDefaultFocus();
+                            }
+
+                            ImGui::EndCombo();
+                        }
+                    }
+
+                    switch (data->GetType())
+                    {
+                    case CeDataType::Vector2:
+                    {
+                        auto v = data->As<Vector2>();
+                        ImGui::DragFloat2("Data", &v->x, 0.01f);
+                    }
+                    break;
+                    case CeDataType::Vector3:
+                    {
+                        auto v = data->As<Vector3>();
+                        ImGui::DragFloat3("Data", &v->x, 0.01f);
+                    }
+                    break;
+                    case CeDataType::Vector4:
+                    {
+                        auto v = data->As<Vector4>();
+                        ImGui::DragFloat4("Data", &v->x, 0.01f);
+                    }
+                    break;
+                    case CeDataType::Color:
+                    {
+                    }
+                    break;
+                    case CeDataType::Float:
+                    {
+                    }
+                    break;
+                    }
+
+                    ImGui::TreePop();
+                }
+                i++;
+            }
+        }
+
+        static bool MaterialConfiguratorRenderTexture(const char *label, std::string &path)
+        {
+            bool change = false;
+            if (ImGui::TreeNode(label))
+            {
+                u32 texture = EditorTextureSystem::GetTexID(path);
+                ImGui::Image((void *)(u64)texture, {100, 100});
+
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload *payload =
+                            ImGui::AcceptDragDropPayload("ContentPanelDragDrop"))
+                    {
+                        const char *str = (const char *)payload->Data;
+                        std::string ext = StringUtils::GetFilenameExtension(str);
+
+                        if (StringIsImageExtension(ext))
+                        {
+                            path = str;
+                            change = true;
+                        }
+                    }
+                    ImGui::EndDragDropTarget();
+                }
+
+                ImGui::TreePop();
+            }
+
+            return change;
+        }
+
+        void RenderMaterialConfig(Material::Configuration &Config)
+        {
+            EditorUtils::ImGuiColor("Color", Config.Color);
+
+            // todo: Add metalic ao and roughness
+            // to centuries of damn ive never been so yawn cant bealive im still standing cant
+            // bealive life this long
+
+            ImGui::DragFloat("Metallic", &Config.Metallic, 0.01f, 0.001f);
+            ImGui::DragFloat("Roughness", &Config.Roughness, 0.01f, 0.001f);
+            ImGui::DragFloat("AO", &Config.AO, 0.01f, 0.001f);
+
+            MaterialConfiguratorRenderTexture("Color Texture", Config.ColorTexture);
+            MaterialConfiguratorRenderTexture("Normal Texture", Config.NormalTexture);
         }
     } // namespace EditorUtils
 } // namespace Core
