@@ -46,12 +46,16 @@ namespace Core
         Actor(const std::string &name);
         ~Actor();
 
+        static Actor *From(Actor *actor, bool copyID = false);
+
         inline Matrix4 &GetLocalMatrix() { return localMatrix; };
         inline Matrix4 &GetGlobalMatrix() { return globalMatrix; };
         inline Transform &GetTransform() { return transform; };
 
         inline ActorList &GetChildren() { return children; };
         inline Actor *GetParent() { return parent; };
+
+        PerspectiveCameraComponent *GetCameraComponentInHierarchy(bool primaryMaters = true);
 
         Actor *CreateChild(const std::string &name);
         void AddChild(Actor *childInstance);

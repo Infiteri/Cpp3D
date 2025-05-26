@@ -4,18 +4,12 @@
 #include <cstdarg>
 #include <iostream>
 #include <string.h>
-#include <unordered_map>
+
+#define CE_TRACK_MESSAGE 1
 
 namespace Core
 {
-    struct State
-    {
-        std::unordered_map<std::string, Logger::Category> Categories;
-        std::unordered_map<Logger::Level, Platform::ConsoleColor> ConsoleColor;
-        std::unordered_map<Logger::Level, std::string> LevelString;
-    };
-
-    static State state;
+    static Logger::State state;
 
     void Logger::Init()
     {
@@ -69,6 +63,10 @@ namespace Core
 
         Platform::SetConsoleColor(state.ConsoleColor[level]);
         Platform::LogMessage(OutMessageWithLevels);
+
+#if CE_TRACK_MESSAGE == 1
+        state.LogMessages.push_back({OutMessageWithLevels, cat.Prefix, level});
+#endif
     }
 
     Logger::Category &Logger::AddCategory(const std::string &name, const std::string &prefix)
@@ -78,5 +76,7 @@ namespace Core
         c.Prefix = prefix;
         return c;
     }
+
+    std::vector<Logger::LogMessage> &Logger::GetLogMessages() { return state.LogMessages; }
 
 } // namespace Core

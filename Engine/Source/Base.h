@@ -11,7 +11,7 @@ typedef unsigned long long u64;
 
 #define CE_VERIFY(exp)                                                                             \
     if (!(exp))                                                                                    \
-        return;
+    return
 
 #ifdef CE_WITH_EDITOR
 #define CE_ED_API __declspec(dllexport)

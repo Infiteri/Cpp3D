@@ -50,6 +50,7 @@ namespace Core
         CE_SERIALIZE_COMPONENT_CALLBACK(Mesh);
         CE_SERIALIZE_COMPONENT_CALLBACK(PointLight);
         CE_SERIALIZE_COMPONENT_CALLBACK(SpotLight);
+        CE_SERIALIZE_COMPONENT_CALLBACK(PerspectiveCamera);
     }
 
     void ComponentSerializer::_SerialzieComponentCount(YAML::Emitter &out)
@@ -57,10 +58,11 @@ namespace Core
         CE_GET_COMPONENT_COUNT(Mesh);
         CE_GET_COMPONENT_COUNT(PointLight);
         CE_GET_COMPONENT_COUNT(SpotLight);
+        CE_GET_COMPONENT_COUNT(PerspectiveCamera);
 
         CE_SERIALIZE_FIELD("MeshComponentCount", count.Mesh);
         CE_SERIALIZE_FIELD("PointLightComponentCount", count.PointLight);
-        CE_SERIALIZE_FIELD("SpotLightComponentCount", count.SpotLight);
+        CE_SERIALIZE_FIELD("PerspectiveCameraComponentCount", count.PerspectiveCamera);
     }
 
     void ComponentSerializer::_SerializeMeshComponent(MeshComponent *mesh, int index,
@@ -159,11 +161,27 @@ namespace Core
         out << YAML::EndMap;
     }
 
+    void ComponentSerializer::_SerializePerspectiveCameraComponent(PerspectiveCameraComponent *c,
+                                                                   int index, YAML::Emitter &out)
+    {
+        out << YAML::Key << "PerspectiveCameraComponent " + std::to_string(index);
+        out << YAML::BeginMap;
+
+        CE_SERIALIZE_FIELD("FOV", c->FOV);
+        CE_SERIALIZE_FIELD("Near", c->Near);
+        CE_SERIALIZE_FIELD("Far", c->Far);
+        CE_SERIALIZE_FIELD("IsPrimary", c->IsPrimary);
+
+        out << YAML::EndMap;
+    }
+
     void ComponentSerializer::Deserialize(YAML::Node &node)
     {
         CE_DESERIALIZE_COMPONENT("MeshComponent", _DeserializeMeshComponent);
         CE_DESERIALIZE_COMPONENT("PointLightComponent", _DeserializePointLightComponent);
         CE_DESERIALIZE_COMPONENT("SpotLightComponent", _DeserializeSpotLightComponent);
+        CE_DESERIALIZE_COMPONENT("PerspectiveCameraComponent",
+                                 _DeserializePerspectiveCameraComponent);
     }
 
     void ComponentSerializer::_DeserializeMeshComponent(YAML::Node node)
@@ -248,5 +266,15 @@ namespace Core
         pl->Quadratic = node["Quadratic"].as<float>();
         pl->CutOff = node["CutOff"].as<float>();
         pl->OuterCutOff = node["OuterCutOff"].as<float>();
+    }
+
+    void ComponentSerializer::_DeserializePerspectiveCameraComponent(YAML::Node node)
+    {
+        auto c = actor->AddComponent<PerspectiveCameraComponent>();
+
+        c->FOV = node["FOV"].as<float>();
+        c->Near = node["Near"].as<float>();
+        c->Far = node["Far"].as<float>();
+        c->IsPrimary = node["IsPrimary"].as<bool>();
     }
 } // namespace Core

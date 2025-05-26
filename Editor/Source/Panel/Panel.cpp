@@ -1,5 +1,6 @@
 #include "Panel.h"
 #include "Panel/ContentBrowserPanel.h"
+#include "Panel/LoggerPanel.h"
 #include "Panel/SceneEnvironmentPanel.h"
 #include "SceneHierarchyPanel.h"
 
@@ -10,6 +11,7 @@ namespace Core
         Panels.push_back(new SceneHierarchyPanel());
         Panels.push_back(new ContentBrowserPanel());
         Panels.push_back(new SceneEnvironmentPanel());
+        Panels.push_back(new LoggerPanel());
     }
 
     PanelSystem::~PanelSystem()

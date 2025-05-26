@@ -1,6 +1,11 @@
 #include "Actor.h"
 #include "Base.h"
 #include "Core/Logger.h"
+#include "Scene/Components/Components.h"
+
+#define CE_COPY_COMPONENT(type)                                                                    \
+    for (auto c : actor->GetComponents<type>())                                                    \
+    out->AddComponent<type>()->From(c)
 
 namespace Core
 {
@@ -17,6 +22,25 @@ namespace Core
             delete child;
 
         components.clear();
+    }
+
+    Actor *Actor::From(Actor *actor, bool copyID)
+    {
+        CE_VERIFY(actor) nullptr;
+
+        Actor *out = new Actor();
+        out->parent = actor->parent;
+        out->name = actor->name;
+        out->transform = actor->transform;
+
+        if (copyID)
+            out->id = actor->id;
+
+        CE_COPY_COMPONENT(MeshComponent);
+        CE_COPY_COMPONENT(PointLightComponent);
+        CE_COPY_COMPONENT(SpotLightComponent);
+
+        return out;
     }
 
     void Actor::_CalculateTransformMatrices()
@@ -181,4 +205,28 @@ namespace Core
         }
     }
 
+    PerspectiveCameraComponent *Actor::GetCameraComponentInHierarchy(bool primaryMatters)
+    {
+        PerspectiveCameraComponent *wantedCamera = nullptr;
+        auto thisActorCameras = GetComponents<PerspectiveCameraComponent>();
+        for (auto cam : thisActorCameras)
+        {
+            if (primaryMatters)
+            {
+                if (cam->IsPrimary)
+                    wantedCamera = cam;
+                return cam;
+            }
+            else
+            {
+                return cam; // don't no care if its primary
+            }
+        }
+
+        // recursive
+        for (auto child : children)
+            wantedCamera = child->GetCameraComponentInHierarchy(primaryMatters);
+
+        return wantedCamera;
+    }
 } // namespace Core

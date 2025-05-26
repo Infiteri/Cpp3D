@@ -9,6 +9,7 @@
 #include "EditorSettings.h"
 #include "ImGuizmo.h"
 #include "Panel/Panel.h"
+#include "Scene/Scene.h"
 #include "imgui.h"
 
 // note: Kinda eh!
@@ -20,9 +21,18 @@ namespace Core
     class EditorLayer : public Layer
     {
     public:
+        enum class SceneState
+        {
+            Start,
+            Stop
+        };
+
         struct State
         {
             PanelSystem Panels;
+
+            SceneState CurrentSceneState = SceneState::Stop;
+            Scene *EditorScene = nullptr;
 
             EditorPopupSystem Popup;
 
@@ -50,6 +60,8 @@ namespace Core
         void OnAttach();
         void OnDetach();
 
+        std::string GetAssetPath(const std::string &name);
+
         void SerializeSettings();
         void UpdateWithSettings();
 
@@ -70,10 +82,14 @@ namespace Core
         void SceneOpen(const std::string &name);
         void SceneSave();
         void SceneSaveAs();
+
+        void SceneStartRuntime();
+        void SceneStopRuntime();
         // -----------
 
         // -- UI --
         void UI_TopMenuBar();
+        void UI_TopBar();
         // --------
 
         static EditorLayer *GetInstance();

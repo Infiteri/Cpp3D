@@ -186,15 +186,16 @@ namespace Core
 
             // todo: ...
             if (a->GetParent())
-                a->GetParent()->RemoveActor(a->GetID());
+                a->GetParent()->RemoveActor(a->GetID(), true);
             else
-                World::GetActive()->RemoveActor(a->GetID());
+                World::GetActive()->RemoveActor(a->GetID(), true);
         }
     }
 
     void RenderMeshUI(MeshComponent *m, Actor *a);
     void RenderPointLightUI(PointLightComponent *c, Actor *a);
     void RenderSpotLightUI(SpotLightComponent *c, Actor *a);
+    void RenderPerspectiveCameraUI(PerspectiveCameraComponent *c, Actor *a);
 
     void SceneHierarchyPanel::RenderActorComponents(Actor *a)
     {
@@ -213,6 +214,8 @@ namespace Core
         CE_RENDER_COMP("Mesh Component", MeshComponent, RenderMeshUI);
         CE_RENDER_COMP("Point Light Component", PointLightComponent, RenderPointLightUI);
         CE_RENDER_COMP("Spot Light Component", SpotLightComponent, RenderSpotLightUI);
+        CE_RENDER_COMP("Perspective Camera Component", PerspectiveCameraComponent,
+                       RenderPerspectiveCameraUI);
 
         ImGui::NewLine();
 
@@ -224,6 +227,7 @@ namespace Core
             CE_ADD_COMP_RENDER("Mesh Component", MeshComponent);
             CE_ADD_COMP_RENDER("Point Light Component", PointLightComponent);
             CE_ADD_COMP_RENDER("Spot Light Component", SpotLightComponent);
+            CE_ADD_COMP_RENDER("Perspective Camera Component", PerspectiveCameraComponent);
 
             ImGui::EndPopup();
         }
@@ -495,5 +499,21 @@ namespace Core
         ImGui::DragFloat("Quadratic", &pl->Quadratic, 0.02, 0.0f);
         ImGui::DragFloat("Cut off", &pl->CutOff, 0.02, 0.0f);
         ImGui::DragFloat("Outer cut off", &pl->OuterCutOff, 0.02, 0.0f);
+    }
+
+    void RenderPerspectiveCameraUI(PerspectiveCameraComponent *c, Actor *a)
+    {
+        bool funcs[] = {
+            ImGui::DragFloat("FOV", &c->FOV, 0.01f, 15.0f, 360.0f),
+            ImGui::DragFloat("Near", &c->Near, 0.01f, 0.0001f),
+            ImGui::DragFloat("Far", &c->Far, 0.01f, 0.001f),
+        };
+
+        ImGui::Checkbox("Is Primary", &c->IsPrimary);
+
+        // note : Too much?
+        for (int i = 0; i < 3; i++)
+            if (funcs[i])
+                c->UpdateCamera();
     }
 } // namespace Core

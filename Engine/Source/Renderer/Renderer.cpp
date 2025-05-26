@@ -64,11 +64,6 @@ namespace Core
 
         state.Screen.Create();
 
-        CameraSystem::AddPerspectiveCamera("Renderer",
-                                           {90, state.ScreenViewport.GetAspect(), 0.01f, 1000.0f});
-        CameraSystem::ActivatePerspectiveCamera("Renderer");
-        CameraSystem::GetActivePerspective()->SetPosition({0, 0, 0});
-
         glEnable(GL_MULTISAMPLE);
     }
 
@@ -220,10 +215,10 @@ namespace Core
 
     void Renderer::RenderCubemapShader(Shader *shader)
     {
-        CE_VERIFY(shader);
+        auto camera = CameraSystem::GetActivePerspective();
+        CE_VERIFY(shader && camera);
 
         auto array = state.Skybox.array;
-        auto camera = CameraSystem::GetActivePerspective();
 
         glDepthMask(false);
 

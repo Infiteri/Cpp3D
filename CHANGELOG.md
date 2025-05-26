@@ -82,3 +82,15 @@
 
 1. Refactored Editor code
 2. Added more Editor functionality
+3. Added Custom image format for faster images
+4. Added font settings 
+5. Added Ce Data Set for sky shaders
+6. Added shader to sky renderering (Color/Skybox/Shader now)
+7. Added Toast Message system to editor
+
+
+# 0.1.1 - 26.05.2025
+
+1. Added Camera Component and details
+2. added scene runtime (WIP)
+3. Added Logger panel

@@ -74,7 +74,10 @@ namespace Core
     void TextureSystem::Remove(const std::string &name)
     {
         if (!Exists(name))
+        {
+            CE_TEX_DBG("No texture found");
             return;
+        }
 
         state.Tex2D[name].Count--;
         CE_TEX_DBG("Removing texture: '%s', new count = %i", name.c_str(), state.Tex2D[name].Count);

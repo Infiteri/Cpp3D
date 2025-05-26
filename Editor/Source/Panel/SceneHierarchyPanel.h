@@ -15,6 +15,8 @@ namespace Core
         ~SceneHierarchyPanel() {};
 
         inline Actor *GetSelectedActor() { return selected; };
+        inline void DeselectActor() { selected = nullptr; };
+        inline void SelectActor(Actor *a) { selected = a; };
 
         void RenderActor(Actor *a, Actor *parent = nullptr, bool parentNodeOpen = false);
         void RenderActorComponents(Actor *a);

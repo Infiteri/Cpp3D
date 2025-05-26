@@ -4,16 +4,13 @@
 #include "Core/Event/CeEvents.h"
 #include "Core/Event/Event.h"
 #include "Core/Input.h"
-#include "Core/Layer/ImGuiLayer.h"
 #include "Core/Logger.h"
 #include "Core/Util/StringUtils.h"
 #include "EditorSettings.h"
 #include "EditorToast.H"
-#include "EditorUtils.h"
 #include "Renderer/Camera/CameraSystem.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Texture/CubemapTexture.h"
-#include "Resource/CeImageLoader.h"
 #include "Resource/CubemapLoader.h"
 #include "Resource/MaterialLoader.h"
 #include "Scene/Scene.h"
@@ -23,7 +20,8 @@
 #include "Platform/Platform.h"
 
 #include "Panel/SceneHierarchyPanel.h"
-#include "yaml-cpp/emittermanip.h"
+
+#include "EditorTextureSystem.h"
 
 #include <ImGuizmo.h>
 #include <imgui.h>
@@ -42,6 +40,11 @@ namespace Core
 
         CE_DEFINE_LOG_CATEGORY("CE_EDITOR", "Editor");
 
+        CameraSystem::AddPerspectiveCamera(
+            "EditorCamera", {90, Renderer::GetViewport().GetAspect(), 0.01f, 1000.0f});
+        CameraSystem::ActivatePerspectiveCamera("EditorCamera");
+        CameraSystem::GetActivePerspective()->SetPosition({0, 0, 0});
+
         state.Camera = CameraSystem::GetActivePerspective();
 
         state.Settings.RegisterThemeColors();
@@ -56,23 +59,13 @@ namespace Core
 
         SetupFonts();
 
-        // todo: File
-        Scene *scene = World::Create("Test");
+        // todo: Setup this with some kind of Project structure
+        World::Create("Test");
         World::Activate("Test");
 
-#if 0
-       auto test1 = scene->CreateActor("TTV");
-        auto mesh = test1->AddComponent<MeshComponent>();
-        test1->GetTransform().Position = {0, 0, 0};
-        mesh->GetMesh()->SetMaterial(Material::Configuration());
-        mesh->GetMesh()->GetMaterial()->GetColor().r = 125;
-        mesh->GetMesh()->GetMaterial()->GetColor().g = 125;
-        mesh->GetMesh()->GetMaterial()->GetColor().b = 125;
-        mesh->GetMesh()->GetMaterial()->SetColorTexture("CM.jfif");
-
-#else
         SceneOpen("Scene.ce_scene");
-#endif
+
+        SceneStopRuntime();
     }
 
     void EditorLayer::OnDetach() {}
@@ -88,6 +81,11 @@ namespace Core
             if (kb->Type == EventKeyboardButton::Press)
                 state.Keybind.OnKeyDown(kb->Key);
         }
+    }
+
+    std::string EditorLayer::GetAssetPath(const std::string &name)
+    {
+        return "EngineAssets/" + name;
     }
 
     void EditorLayer::SetupFonts()
@@ -153,32 +151,13 @@ namespace Core
         ImGuizmo::BeginFrame();
 
         ToastMessage::OnImGuiRender();
-
         state.Dock.Begin();
-
         state.Panels.RenderImGui();
+
         DockspaceRenderSceneViewport();
-        ImGui::Begin("ImGui Style Editor");
-
-        ImVec4 *colors = ImGui::GetStyle().Colors;
-        for (int i = 0; i < ImGuiCol_COUNT; i++)
-        {
-            const char *name = ImGui::GetStyleColorName(i);
-            ImGui::ColorEdit4(name, (float *)&colors[i]);
-        }
-
-        if (ImGui::Button("Save"))
-        {
-            SceneSerializer serializer{World::GetActive()};
-            serializer.Serialize("Scene.ce_scene");
-        }
-
-        if (ImGui::Button("Reload post"))
-            Renderer::ReloadPostProcessShaders();
-
-        ImGui::End();
 
         UI_TopMenuBar();
+        UI_TopBar();
 
         {
             bool save = false;
@@ -381,6 +360,37 @@ namespace Core
         }
     }
 
+    void EditorLayer::UI_TopBar()
+    {
+        ImGui::Begin("##TopBar", nullptr, ImGuiWindowFlags_NoDecoration);
+
+        float size = 12;
+        const ImVec2 vecSize = {size, size};
+
+        switch (state.CurrentSceneState)
+        {
+        case SceneState::Start:
+            if (ImGui::ImageButton((void *)(u64)EditorTextureSystem::GetTexID(
+                                       GetAssetPath("Icons/StopButton.png")),
+                                   vecSize))
+            {
+                SceneStopRuntime();
+            }
+            break;
+
+        case SceneState::Stop:
+            if (ImGui::ImageButton((void *)(u64)EditorTextureSystem::GetTexID(
+                                       GetAssetPath("Icons/PlayButton.png")),
+                                   vecSize))
+            {
+                SceneStartRuntime();
+            }
+            break;
+        }
+
+        ImGui::End();
+    }
+
     void EditorLayer::SceneNew()
     {
         ToastMessage::Add("New Scene");
@@ -440,6 +450,49 @@ namespace Core
         state.ActiveScenePath = Platform::SaveFileDialog("*.ce_scene \0*.ce_scene\0");
         if (!state.ActiveScenePath.empty())
             SceneSave();
+    }
+
+    void EditorLayer::SceneStartRuntime()
+    {
+        if (state.CurrentSceneState == SceneState::Start)
+            return;
+
+        state.CurrentSceneState = SceneState::Start;
+
+        // note: 1. Copy active scene to editor scene
+        // 2. Stop active scene
+        // 3. Set new active scene
+        // 4. Start new scene
+
+        state.EditorScene = Scene::From(World::GetActive());
+    }
+
+    void EditorLayer::SceneStopRuntime()
+    {
+        if (state.CurrentSceneState == SceneState::Stop)
+            return;
+
+        CameraSystem::ActivatePerspectiveCamera("EditorCamera");
+
+        state.CurrentSceneState = SceneState::Stop;
+
+        if (!state.EditorScene)
+            return;
+
+        auto panel = (SceneHierarchyPanel *)state.Panels.Panels[0];
+        UUID id = 0;
+        if (panel->GetSelectedActor())
+            id = panel->GetSelectedActor()->GetID();
+        panel->DeselectActor();
+
+        World::DeactivateActive();
+        World::Editor_CopyToActive(state.EditorScene);
+
+        delete state.EditorScene;
+        state.EditorScene = nullptr;
+
+        if (id.Get() != 0)
+            panel->SelectActor(World::GetActive()->GetActorInAllHierarchy(id));
     }
 
     EditorLayer *EditorLayer::GetInstance() { return Instance; }

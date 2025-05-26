@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Base.h"
+#include "Platform/Platform.h"
 #include <string>
+#include <unordered_map>
 
 namespace Core
 {
@@ -23,12 +25,29 @@ namespace Core
             std::string Prefix;
         };
 
+        struct LogMessage
+        {
+            std::string Message;
+            std::string Category;
+            Level Level;
+        };
+
+        struct State
+        {
+            std::unordered_map<std::string, Logger::Category> Categories;
+            std::unordered_map<Level, Platform::ConsoleColor> ConsoleColor;
+            std::unordered_map<Level, std::string> LevelString;
+            std::vector<LogMessage> LogMessages;
+        };
+
     public:
         Logger() {};
         ~Logger() {};
 
         static void Init();
         static void Shutdown();
+
+        static std::vector<LogMessage> &GetLogMessages();
 
         static Category &AddCategory(const std::string &name, const std::string &prefix);
 

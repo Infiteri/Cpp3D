@@ -2,6 +2,7 @@
 
 #include "Base.h"
 
+#include "Renderer/Camera/PerspectiveCamera.h"
 #include "Renderer/Light/PointLight.h"
 #include "Renderer/Light/SpotLight.h"
 #include "Renderer/Object/Mesh.h"
@@ -40,7 +41,7 @@ namespace Core
 
         void Render();
 
-        void From(Mesh *mesh);
+        void From(MeshComponent *mesh);
 
         inline Mesh *GetMesh() { return mesh; };
     };
@@ -50,12 +51,9 @@ namespace Core
     public:
         PointLight Light;
 
-        PointLightComponent() = default;
-        ~PointLightComponent() = default;
-
         void Render();
 
-        void From(PointLightComponent *p) {};
+        void From(PointLightComponent *p);
     };
 
     class CE_API SpotLightComponent : public Component
@@ -63,11 +61,26 @@ namespace Core
     public:
         SpotLight Light;
 
-        SpotLightComponent() = default;
-        ~SpotLightComponent() = default;
+        void Render();
+
+        void From(SpotLightComponent *p);
+    };
+
+    class CE_API PerspectiveCameraComponent : public Component
+    {
+    public:
+        PerspectiveCamera Camera;
+        float FOV = 90.0f;
+        float Near = 0.01f;
+        float Far = 1000.0f;
+        bool IsPrimary = true;
+
+        void Start();
 
         void Render();
 
-        void From(SpotLightComponent *p) {};
+        void UpdateCamera();
+
+        void From(PerspectiveCameraComponent *o);
     };
 } // namespace Core

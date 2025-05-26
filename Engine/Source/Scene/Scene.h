@@ -34,11 +34,15 @@ namespace Core
         Scene();
         ~Scene();
 
+        static Scene *From(Scene *scene);
+
         inline ActorList &GetActors() { return actors; };
         inline SceneEnvironment *GetEnvironment() { return &environment; };
         inline std::string GetName() { return name; };
 
         void SetName(const std::string &n);
+
+        void ActivateSceneCamera();
 
         void Start();
         void Update();

@@ -1,13 +1,37 @@
 #include "Scene.h"
+#include "Base.h"
 #include "Core/Logger.h"
+#include "Renderer/Camera/CameraSystem.h"
 #include "Renderer/Renderer.h"
+#include "Scene/Components/Components.h"
 #include <algorithm>
 
 namespace Core
 {
     Scene::Scene() { state = State::Uninitialzied; }
 
-    Scene::~Scene() {}
+    Scene::~Scene()
+    {
+        for (auto actor : actors)
+            delete actor;
+
+        actors.clear();
+    }
+
+    Scene *Scene::From(Scene *scene)
+    {
+        CE_VERIFY(scene) nullptr;
+
+        Scene *out = new Scene();
+
+        out->name = scene->name;
+        out->environment.From(scene->environment);
+
+        for (auto actor : scene->actors)
+            out->AddActor(Actor::From(actor));
+
+        return out;
+    }
 
     void Scene::Start()
     {
@@ -27,6 +51,8 @@ namespace Core
 
         Renderer::SetDirectioanlLightInstance(&environment.Light);
         Renderer::SetSkyInstance(&environment.Sky);
+
+        ActivateSceneCamera();
     }
 
     void Scene::Update()
@@ -76,6 +102,20 @@ namespace Core
         {
             ac->Stop();
         }
+    }
+
+    void Scene::ActivateSceneCamera()
+    {
+        PerspectiveCameraComponent *camera = nullptr;
+
+        for (auto a : actors)
+            camera = a->GetCameraComponentInHierarchy(true);
+
+        if (!camera)
+            for (auto a : actors)
+                camera = a->GetCameraComponentInHierarchy(false);
+
+        CameraSystem::ActivatePerspectiveCameraInstance(&camera->Camera);
     }
 
     void Scene::SetName(const std::string &n) { name = n; }

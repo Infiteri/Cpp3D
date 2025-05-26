@@ -42,6 +42,8 @@ namespace Core
 
         void Render();
 
+        void From(Sky &sky);
+
         inline SkyMode GetMode() { return mode; };
         inline Color &GetColor() { return color; };
         inline CeDataSet *GetShaderDataSet() { return &shaderData; };

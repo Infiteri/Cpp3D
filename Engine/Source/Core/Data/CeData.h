@@ -35,6 +35,7 @@ namespace Core
         void SetType(CeDataType dt);
 
         inline CeDataType GetType() { return type; };
+        inline void *GetData() { return data; };
         inline std::string GetName() { return name; };
 
         template <typename T> T *As() { return (T *)data; };

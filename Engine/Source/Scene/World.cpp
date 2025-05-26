@@ -20,6 +20,27 @@ namespace Core
         state.Scenes.clear();
     }
 
+    void World::Editor_ActivateFromInstance(Scene *scene)
+    {
+        if (state.ActiveScene != nullptr)
+            DeactivateActive();
+
+        if (!scene)
+            return;
+
+        state.ActiveScene = scene;
+        state.ActiveScene->Start();
+    }
+
+    void World::Editor_CopyToActive(Scene *scene)
+    {
+        CE_VERIFY(scene);
+
+        state.ActiveScene = Scene::From(scene);
+        // note: this sucks here but too lazy rn
+        state.ActiveScene->Start();
+    }
+
     Scene *World::GetActive() { return state.ActiveScene; }
 
     Scene *World::Create(const std::string &name)

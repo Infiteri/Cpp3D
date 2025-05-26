@@ -25,6 +25,7 @@ namespace Core
             int Mesh = 0;
             int PointLight = 0;
             int SpotLight = 0;
+            int PerspectiveCamera = 0;
         };
         ComponentCount count;
 
@@ -38,6 +39,10 @@ namespace Core
 
         void _SerializeSpotLightComponent(SpotLightComponent *c, int index, YAML::Emitter &out);
         void _DeserializeSpotLightComponent(YAML::Node node);
+
+        void _SerializePerspectiveCameraComponent(PerspectiveCameraComponent *c, int index,
+                                                  YAML::Emitter &out);
+        void _DeserializePerspectiveCameraComponent(YAML::Node node);
 
     public:
         ComponentSerializer(Actor *target);

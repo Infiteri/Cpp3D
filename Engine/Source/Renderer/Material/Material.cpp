@@ -104,7 +104,7 @@ namespace Core
         if (this == MaterialSystem::GetDefault())
         {
             CE_LOG("CE_RENDER", Warn,
-                   "Cannot set color texture, material must be set to Config type");
+                   "Cannot set normal texture, material must be set to Config type");
             return;
         }
 

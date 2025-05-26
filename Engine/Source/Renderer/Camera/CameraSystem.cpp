@@ -37,4 +37,9 @@ namespace Core
     }
 
     PerspectiveCamera *CameraSystem::GetActivePerspective() { return state.ActivePerspective; }
+
+    void CameraSystem::ActivatePerspectiveCameraInstance(PerspectiveCamera *camera)
+    {
+        state.ActivePerspective = camera;
+    }
 } // namespace Core

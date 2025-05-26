@@ -17,6 +17,11 @@ namespace Core
             std::unordered_map<std::string, Scene *> Scenes;
         };
 
+    private:
+        friend class EditorLayer;
+        static void Editor_ActivateFromInstance(Scene *scene);
+        static void Editor_CopyToActive(Scene *scene);
+
     public:
         World() {};
         ~World() {};

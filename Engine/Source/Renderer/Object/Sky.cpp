@@ -141,4 +141,31 @@ namespace Core
             break;
         }
     }
+
+    void Sky::From(Sky &sky)
+    {
+        _DestroyFromCurrentMode();
+
+        // note: Basic data gets copied, stuff gets initialied based on sky.mode
+        color = sky.color;
+        shaderName = sky.shaderName;
+        cubemapLoadPath = sky.cubemapLoadPath;
+
+        for (auto &data : sky.shaderData.GetDataSet())
+            shaderData.Add(data.second->GetName(), data.second->GetType(), data.second->GetData());
+
+        switch (sky.mode)
+        {
+        default:
+            break;
+
+        case SkyMode::Skybox:
+            SetSkyboxMode(cubemapLoadPath);
+            break;
+
+        case SkyMode::Shader:
+            SetShaderMode(shaderName);
+            break;
+        }
+    }
 } // namespace Core

@@ -28,6 +28,7 @@ namespace Core
         static PerspectiveCamera *GetPerspectiveCamera(const std::string &name);
 
         static void ActivatePerspectiveCamera(const std::string &name);
+        static void ActivatePerspectiveCameraInstance(PerspectiveCamera *camera);
         static PerspectiveCamera *GetActivePerspective();
     };
 } // namespace Core
