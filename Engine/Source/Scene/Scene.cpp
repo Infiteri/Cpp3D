@@ -49,9 +49,6 @@ namespace Core
             ac->Start();
         }
 
-        Renderer::SetDirectioanlLightInstance(&environment.Light);
-        Renderer::SetSkyInstance(&environment.Sky);
-
         ActivateSceneCamera();
     }
 
@@ -59,7 +56,6 @@ namespace Core
     {
         if (state != State::Started && state != State::Running)
         {
-            CE_LOG("CE_SCENE", Warn, "Calling update on scene that isn't started, nothing done.");
             return;
         }
 
@@ -73,11 +69,13 @@ namespace Core
 
     void Scene::Render()
     {
-        if (state != State::Started && state != State::Running)
-        {
-            CE_LOG("CE_SCENE", Warn, "Calling render on scene that isn't started, nothing done.");
+        if (state == State::Stopped)
             return;
-        }
+
+        // todo: Better, note that its here due to some memory leak fixes, move somewhere else after
+        // fixing editor layer
+        Renderer::SetDirectioanlLightInstance(&environment.Light);
+        Renderer::SetSkyInstance(&environment.Sky);
 
         state = State::Running;
 

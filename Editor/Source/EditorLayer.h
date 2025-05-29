@@ -85,6 +85,9 @@ namespace Core
 
         void SceneStartRuntime();
         void SceneStopRuntime();
+
+        void OnSceneRuntime();
+        void OnEditorRuntime();
         // -----------
 
         // -- UI --

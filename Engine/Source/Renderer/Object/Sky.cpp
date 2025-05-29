@@ -6,8 +6,6 @@
 #include "Renderer/Texture/CubemapTexture.h"
 #include "Resource/CubemapLoader.h"
 
-#include "Core/Logger.h"
-
 #include <glad/glad.h>
 
 namespace Core
@@ -16,8 +14,6 @@ namespace Core
     {
         cubemap = nullptr;
         mode = SkyMode::Color;
-
-        shaderData.Add("uTint", CeDataType::Vector2, new Vector2(1, 1));
     }
 
     Sky::~Sky() { _DestroyFromCurrentMode(); }

@@ -73,6 +73,7 @@ namespace Core
 
         colorTexture.Type = TextureType::Default;
         colorTexture.Tex = TextureSystem::GetDefault();
+        state.ColorTexture = "";
     }
 
     void Material::SetColorTexture(const std::string &name)
@@ -88,6 +89,7 @@ namespace Core
 
         colorTexture.Type = TextureType::Loaded;
         colorTexture.Tex = TextureSystem::Get(name);
+        state.ColorTexture = name;
     }
 
     void Material::SetNormalTextureDefault()
@@ -97,6 +99,7 @@ namespace Core
 
         normalTexture.Type = TextureType::Default;
         normalTexture.Tex = TextureSystem::GetDefault();
+        state.NormalTexture = "";
     }
 
     void Material::SetNormalTexture(const std::string &name)
@@ -112,6 +115,7 @@ namespace Core
 
         normalTexture.Type = TextureType::Loaded;
         normalTexture.Tex = TextureSystem::Get(name);
+        state.NormalTexture = name;
     }
 
     void Material::Use(Shader *shader)

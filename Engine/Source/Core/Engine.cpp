@@ -68,7 +68,8 @@ namespace Core
     {
         EventSystem::Update();
         LayerStack::Update();
-        World::UpdateActive();
+        // note: Not wanted right now
+        // todo:       World::UpdateActive();
         state.Window->Update();
     }
 

@@ -46,5 +46,8 @@ namespace Core
         // note: scene specific functions to make life easier
         static void UpdateActive();
         static void RenderActive();
+
+        static void StartActive();
+        static void StopActive();
     };
 } // namespace Core

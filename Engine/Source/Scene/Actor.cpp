@@ -39,6 +39,7 @@ namespace Core
         CE_COPY_COMPONENT(MeshComponent);
         CE_COPY_COMPONENT(PointLightComponent);
         CE_COPY_COMPONENT(SpotLightComponent);
+        CE_COPY_COMPONENT(PerspectiveCameraComponent);
 
         return out;
     }
@@ -144,7 +145,6 @@ namespace Core
     {
         if (state != State::Started && state != State::Running)
         {
-            CE_LOG("CE_SCENE", Warn, "Calling update on actor that isn't started, nothing done.");
             return;
         }
 
@@ -165,9 +165,8 @@ namespace Core
 
     void Actor::Render()
     {
-        if (state != State::Started && state != State::Running)
+        if (state == State::Stopped)
         {
-            CE_LOG("CE_SCENE", Warn, "Calling render on actor that isn't started, nothing done.");
             return;
         }
 

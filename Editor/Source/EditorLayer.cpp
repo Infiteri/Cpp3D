@@ -62,9 +62,7 @@ namespace Core
         // todo: Setup this with some kind of Project structure
         World::Create("Test");
         World::Activate("Test");
-
         SceneOpen("Scene.ce_scene");
-
         SceneStopRuntime();
     }
 
@@ -125,6 +123,22 @@ namespace Core
     }
 
     void EditorLayer::OnUpdate()
+    {
+        switch (state.CurrentSceneState)
+        {
+        case SceneState::Stop:
+            OnEditorRuntime();
+            break;
+
+        case SceneState::Start:
+            OnSceneRuntime();
+            break;
+        }
+    }
+
+    void EditorLayer::OnSceneRuntime() { World::UpdateActive(); }
+
+    void EditorLayer::OnEditorRuntime()
     {
         state.Keybind.Update();
 
@@ -464,15 +478,17 @@ namespace Core
         // 3. Set new active scene
         // 4. Start new scene
 
+        World::StopActive();
         state.EditorScene = Scene::From(World::GetActive());
+        World::StartActive();
     }
 
     void EditorLayer::SceneStopRuntime()
     {
+        CameraSystem::ActivatePerspectiveCamera("EditorCamera");
+
         if (state.CurrentSceneState == SceneState::Stop)
             return;
-
-        CameraSystem::ActivatePerspectiveCamera("EditorCamera");
 
         state.CurrentSceneState = SceneState::Stop;
 
@@ -485,9 +501,8 @@ namespace Core
             id = panel->GetSelectedActor()->GetID();
         panel->DeselectActor();
 
-        World::DeactivateActive();
+        World::StopActive();
         World::Editor_CopyToActive(state.EditorScene);
-
         delete state.EditorScene;
         state.EditorScene = nullptr;
 

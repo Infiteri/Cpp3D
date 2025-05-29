@@ -94,3 +94,4 @@
 1. Added Camera Component and details
 2. added scene runtime (WIP)
 3. Added Logger panel
+4. Fixed bugs

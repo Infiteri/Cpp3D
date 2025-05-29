@@ -36,9 +36,10 @@ namespace Core
     {
         CE_VERIFY(scene);
 
+        if (state.ActiveScene)
+            delete state.ActiveScene;
+
         state.ActiveScene = Scene::From(scene);
-        // note: this sucks here but too lazy rn
-        state.ActiveScene->Start();
     }
 
     Scene *World::GetActive() { return state.ActiveScene; }
@@ -125,4 +126,17 @@ namespace Core
         state.ActiveScene->Render();
     }
 
+    void World::StartActive()
+    {
+        CE_VERIFY(state.ActiveScene);
+
+        state.ActiveScene->Start();
+    }
+
+    void World::StopActive()
+    {
+        CE_VERIFY(state.ActiveScene);
+
+        state.ActiveScene->Stop();
+    }
 } // namespace Core
