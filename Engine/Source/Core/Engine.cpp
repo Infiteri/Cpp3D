@@ -6,6 +6,7 @@
 #include "Core/Logger.h"
 #include "Core/Window/Window.h"
 #include "Layer/ImGuiLayer.h"
+#include "Platform/Library.h"
 #include "Renderer/Renderer.h"
 #include "Scene/World.h"
 #include "imgui.h"
@@ -16,6 +17,8 @@
 
 namespace Core
 {
+    typedef void (*TRY)();
+
     static Engine::State state;
 
     void Engine::InitializeLogger()
