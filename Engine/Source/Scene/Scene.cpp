@@ -4,6 +4,7 @@
 #include "Renderer/Camera/CameraSystem.h"
 #include "Renderer/Renderer.h"
 #include "Scene/Components/Components.h"
+#include "Script/ScriptEngine.h"
 #include <algorithm>
 
 namespace Core
@@ -44,12 +45,16 @@ namespace Core
 
         state = State::Started;
 
+        ScriptEngine::ClearScriptSet();
+
         for (auto ac : actors)
         {
             ac->Start();
         }
 
         ActivateSceneCamera();
+
+        ScriptEngine::OnRuntimeStart();
     }
 
     void Scene::Update()
@@ -90,7 +95,7 @@ namespace Core
         if (state == State::Stopped || state == State::Uninitialzied)
         {
             CE_LOG("CE_SCENE", Warn,
-                   "Calling stop on scene that is alreadyt stopped, nothing done.");
+                   "Calling stop on scene that is already stopped, nothing done.");
             return;
         }
 

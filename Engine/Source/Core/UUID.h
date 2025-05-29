@@ -2,6 +2,8 @@
 
 #include "Base.h"
 
+#include <functional>
+
 namespace Core
 {
     class CE_API UUID
@@ -21,3 +23,14 @@ namespace Core
         bool operator!=(const UUID &other) const { return id != other.id; };
     };
 } // namespace Core
+
+namespace std
+{
+    template <> struct hash<Core::UUID>
+    {
+        std::size_t operator()(const Core::UUID &uuid) const noexcept
+        {
+            return std::hash<u64>{}(uuid.Get());
+        }
+    };
+} // namespace std

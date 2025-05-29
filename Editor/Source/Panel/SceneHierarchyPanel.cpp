@@ -196,6 +196,7 @@ namespace Core
     void RenderPointLightUI(PointLightComponent *c, Actor *a);
     void RenderSpotLightUI(SpotLightComponent *c, Actor *a);
     void RenderPerspectiveCameraUI(PerspectiveCameraComponent *c, Actor *a);
+    void ScriptComponentUI(ScriptComponent *c, Actor *a);
 
     void SceneHierarchyPanel::RenderActorComponents(Actor *a)
     {
@@ -216,6 +217,7 @@ namespace Core
         CE_RENDER_COMP("Spot Light Component", SpotLightComponent, RenderSpotLightUI);
         CE_RENDER_COMP("Perspective Camera Component", PerspectiveCameraComponent,
                        RenderPerspectiveCameraUI);
+        CE_RENDER_COMP("Script Component", ScriptComponent, ScriptComponentUI);
 
         ImGui::NewLine();
 
@@ -228,6 +230,7 @@ namespace Core
             CE_ADD_COMP_RENDER("Point Light Component", PointLightComponent);
             CE_ADD_COMP_RENDER("Spot Light Component", SpotLightComponent);
             CE_ADD_COMP_RENDER("Perspective Camera Component", PerspectiveCameraComponent);
+            CE_ADD_COMP_RENDER("Script Component", ScriptComponent);
 
             ImGui::EndPopup();
         }
@@ -515,5 +518,10 @@ namespace Core
         for (int i = 0; i < 3; i++)
             if (funcs[i])
                 c->UpdateCamera();
+    }
+
+    void ScriptComponentUI(ScriptComponent *c, Actor *a)
+    {
+        EditorUtils::ImGuiString("Class Name", c->ClassName);
     }
 } // namespace Core

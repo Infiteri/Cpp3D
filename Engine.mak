@@ -4,10 +4,10 @@ OBJ_DIR := Bin-Obj
 
 ASSEMBLY := Engine
 EXTENSION := .dll
-COMPILER_FLAGS := -g -std=c++2a
+COMPILER_FLAGS := -g -fno-lto -std=c++2a
 INCLUDE_FLAGS := -IEngine/Source -IEngine/Vendor/GLFW/include -IEngine/Vendor/glad/include -IEngine/Vendor/ImGui -IEngine/Vendor/stb -IEngine/Vendor/YAML/include -IEngine/Vendor/ImGuizmo
 DEFINES := -D_DEBUG -DCE_BUILD_DLL -DCE_WITH_EDITOR -DCE_WIN32 
-FLAGS := -g -shared -L$(BUILD_DIR) -lglfw3 -lglad -lImGui -lcomdlg32 -lShlwapi -lYAML -lImGuizmo
+FLAGS := -g -shared  -fno-lto -L$(BUILD_DIR) -lglfw3 -lglad -lImGui -lcomdlg32 -lShlwapi -lYAML -lImGuizmo
 LINKER_FLAGS := $(FLAGS)
 
 #Recursive wildcard function to get all .cpp files
@@ -41,7 +41,7 @@ clean:
 manual_link:
 	@echo $(OBJ_FILES) 
 	@echo "Manually linking with ld for Win32 (ucrt64)..." 
-	@ld -o $(BUILD_DIR)/$(ASSEMBLY)$(EXTENSION) -LD:/SYS/msys64/ucrt64/lib -LD:\SYS\msys64\ucrt64\lib\gcc\x86_64-w64-mingw32\14.2.0 -lgcc -LD:/SYS/msys65/ucrt64/x86_64-w64-mingw32/lib -LD:/SYS/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/13.2.0 -L$(BUILD_DIR) $(OBJ_FILES) -lstdc++ -lkernel32 -luser32 -lgdi32 -lopengl32 -lEngine -lImGui -lglad -lglfw3 -lucrt -lkernel32 -luser32 -lgdi32 -ladvapi32 -lole32 -loleaut32 -lshell32 -luuid -lcomdlg32 -lws2_32 
+	@ld -o $(BUILD_DIR)/$(ASSEMBLY)$(EXTENSION) -LD:/SYS/msys64/ucrt64/lib -LD:\SYS\msys64\ucrt64\lib\gcc\x86_64-w64-mingw32\14.2.0 -lgcc -LD:/SYS/msys65/ucrt64/x86_64-w64-mingw32/lib -LD:/SYS/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/13.2.0 -L$(BUILD_DIR) $(OBJ_FILES) -lstdc++ -lkernel32 -luser32 -lgdi32 -lopengl32 -lEngine -lImGui -lglad -lglfw3 -lucrt -lkernel32 -luser32 -lgdi32 -ladvapi32 -lole32 -loleaut32 -lshell32 -luuid -lcomdlg32 -lws2_32 -lYAML -lImGuizmo  
 
 
 

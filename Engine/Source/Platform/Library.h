@@ -44,7 +44,11 @@ namespace Core
                 return NULL;
 
             if (functions.find(name) == functions.end())
+            {
                 LoadFunction(name);
+                if (functions.find(name) == functions.end())
+                    return nullptr;
+            }
 
             return (T)functions[name]->PFN;
         };

@@ -89,9 +89,11 @@
 7. Added Toast Message system to editor
 
 
-# 0.1.1 - 26.05.2025
+# 0.1.1 - 29.05.2025
 
 1. Added Camera Component and details
 2. added scene runtime (WIP)
 3. Added Logger panel
 4. Fixed bugs
+5. Basic scripting support
+6. Added script components and details

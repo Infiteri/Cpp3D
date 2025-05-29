@@ -138,4 +138,11 @@ namespace Core
 
         IsPrimary = o->IsPrimary;
     }
+
+    void ScriptComponent::Start()
+    {
+        // think
+    }
+
+    void ScriptComponent::From(ScriptComponent *other) { ClassName = other->ClassName; }
 } // namespace Core

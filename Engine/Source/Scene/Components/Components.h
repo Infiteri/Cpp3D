@@ -6,6 +6,7 @@
 #include "Renderer/Light/PointLight.h"
 #include "Renderer/Light/SpotLight.h"
 #include "Renderer/Object/Mesh.h"
+#include <string>
 
 namespace Core
 {
@@ -50,7 +51,6 @@ namespace Core
     {
     public:
         PointLight Light;
-
         void Render();
 
         void From(PointLightComponent *p);
@@ -82,5 +82,15 @@ namespace Core
         void UpdateCamera();
 
         void From(PerspectiveCameraComponent *o);
+    };
+
+    class CE_API ScriptComponent : public Component
+    {
+    public:
+        std::string ClassName;
+
+        void Start();
+
+        void From(ScriptComponent *other);
     };
 } // namespace Core

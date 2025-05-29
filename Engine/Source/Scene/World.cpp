@@ -101,7 +101,6 @@ namespace Core
             return;
 
         state.ActiveScene = s;
-        state.ActiveScene->Start();
     }
 
     void World::DeactivateActive()

@@ -1,3 +1,11 @@
+#include "Script/ActorScript.h"
+
 #include <iostream>
 
-extern "C" __declspec(dllexport) void Try() { std::cout << "try me"; };
+class Test : public Core::ActorScript
+{
+public:
+    void OnStart() { std::cout << "Hello world"; }
+};
+
+CE_DEFINE_ACTOR_SCRIPT(Test);

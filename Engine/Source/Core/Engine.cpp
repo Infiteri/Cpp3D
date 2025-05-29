@@ -9,6 +9,7 @@
 #include "Platform/Library.h"
 #include "Renderer/Renderer.h"
 #include "Scene/World.h"
+#include "Script/ScriptEngine.h"
 #include "imgui.h"
 
 #include <GLFW/glfw3.h>
@@ -17,8 +18,6 @@
 
 namespace Core
 {
-    typedef void (*TRY)();
-
     static Engine::State state;
 
     void Engine::InitializeLogger()
@@ -35,6 +34,7 @@ namespace Core
         ImGuiLayer::Init();
         EventSystem::Init();
         Renderer::Init();
+        ScriptEngine::Init();
 
         World::Init();
     }
@@ -51,7 +51,7 @@ namespace Core
         InitializeSubsystems();
     }
 
-    void Engine::Init() {}
+    void Engine::Init() { ScriptEngine::LoadLibrary("Lib.dll"); }
 
     bool Engine::ShouldRun() { return state.Window->ShouldRun(); }
 
@@ -81,6 +81,7 @@ namespace Core
         ImGuiLayer::Shutdown();
         LayerStack::Shutdown();
         EventSystem::Shutdown();
+        ScriptEngine::Shutdown();
         World::Shutdown();
     }
 

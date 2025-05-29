@@ -51,6 +51,7 @@ namespace Core
         CE_SERIALIZE_COMPONENT_CALLBACK(PointLight);
         CE_SERIALIZE_COMPONENT_CALLBACK(SpotLight);
         CE_SERIALIZE_COMPONENT_CALLBACK(PerspectiveCamera);
+        CE_SERIALIZE_COMPONENT_CALLBACK(Script);
     }
 
     void ComponentSerializer::_SerialzieComponentCount(YAML::Emitter &out)
@@ -59,10 +60,11 @@ namespace Core
         CE_GET_COMPONENT_COUNT(PointLight);
         CE_GET_COMPONENT_COUNT(SpotLight);
         CE_GET_COMPONENT_COUNT(PerspectiveCamera);
+        CE_GET_COMPONENT_COUNT(Script);
 
         CE_SERIALIZE_FIELD("MeshComponentCount", count.Mesh);
         CE_SERIALIZE_FIELD("PointLightComponentCount", count.PointLight);
-        CE_SERIALIZE_FIELD("PerspectiveCameraComponentCount", count.PerspectiveCamera);
+        CE_SERIALIZE_FIELD("ScriptComponentCount", count.Script);
     }
 
     void ComponentSerializer::_SerializeMeshComponent(MeshComponent *mesh, int index,
@@ -175,6 +177,17 @@ namespace Core
         out << YAML::EndMap;
     }
 
+    void ComponentSerializer::_SerializeScriptComponent(ScriptComponent *c, int index,
+                                                        YAML::Emitter &out)
+    {
+        out << YAML::Key << "ScriptComponent " + std::to_string(index);
+        out << YAML::BeginMap;
+
+        CE_SERIALIZE_FIELD("ClassName", c->ClassName.c_str());
+
+        out << YAML::EndMap;
+    }
+
     void ComponentSerializer::Deserialize(YAML::Node &node)
     {
         CE_DESERIALIZE_COMPONENT("MeshComponent", _DeserializeMeshComponent);
@@ -182,6 +195,8 @@ namespace Core
         CE_DESERIALIZE_COMPONENT("SpotLightComponent", _DeserializeSpotLightComponent);
         CE_DESERIALIZE_COMPONENT("PerspectiveCameraComponent",
                                  _DeserializePerspectiveCameraComponent);
+
+        CE_DESERIALIZE_COMPONENT("ScriptComponent", _DeserializeScriptComponent);
     }
 
     void ComponentSerializer::_DeserializeMeshComponent(YAML::Node node)
@@ -276,5 +291,11 @@ namespace Core
         c->Near = node["Near"].as<float>();
         c->Far = node["Far"].as<float>();
         c->IsPrimary = node["IsPrimary"].as<bool>();
+    }
+
+    void ComponentSerializer::_DeserializeScriptComponent(YAML::Node node)
+    {
+        auto c = actor->AddComponent<ScriptComponent>();
+        c->ClassName = node["ClassName"].as<std::string>();
     }
 } // namespace Core

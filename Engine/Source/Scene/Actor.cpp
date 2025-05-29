@@ -2,6 +2,7 @@
 #include "Base.h"
 #include "Core/Logger.h"
 #include "Scene/Components/Components.h"
+#include "Script/ScriptEngine.h"
 
 #define CE_COPY_COMPONENT(type)                                                                    \
     for (auto c : actor->GetComponents<type>())                                                    \
