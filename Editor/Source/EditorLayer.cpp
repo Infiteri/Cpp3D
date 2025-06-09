@@ -10,6 +10,7 @@
 #include "EditorToast.H"
 #include "Math/Math.h"
 #include "Math/Matrix.h"
+#include "Project/ProjectSystem.h"
 #include "Renderer/Camera/CameraSystem.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Texture/CubemapTexture.h"
@@ -36,63 +37,9 @@ namespace Core
     static EditorLayer::State state;
     static EditorLayer *Instance = nullptr;
 
-    float NormalizeAngleRadians(float angle)
-    {
-        constexpr float TWO_PI = CE_PI * 2;
-        angle = fmod(angle, TWO_PI);
-        if (angle < 0)
-            angle += TWO_PI;
-        return angle;
-    }
-
-    Vector3 ExtractEulerAnglesZYX(const float *data)
-    {
-        Vector3 angles;
-
-        // Map matrix elements (column-major)
-        float r00 = data[0];
-        float r01 = data[4];
-        float r02 = data[8];
-        float r10 = data[1];
-        float r11 = data[5];
-        float r12 = data[9];
-        float r20 = data[2];
-        float r21 = data[6];
-        float r22 = data[10];
-
-        float beta = -asin(r20);
-        float cos_beta = cos(beta);
-        const float epsilon = 1e-6f;
-
-        float alpha, gamma;
-
-        if (fabs(cos_beta) > epsilon)
-        {
-            alpha = atan2(r21, r22);
-            gamma = atan2(r10, r00);
-        }
-        else
-        {
-            alpha = 0.0f;
-            gamma = atan2(-r01, r11);
-        }
-
-        angles.x = NormalizeAngleRadians(alpha);
-        angles.y = NormalizeAngleRadians(beta);
-        angles.z = NormalizeAngleRadians(gamma);
-
-        return angles;
-    }
-
     void EditorLayer::OnAttach()
     {
         Instance = this;
-
-        Matrix4 m =
-            Matrix4::RotateZYX({12 * CE_DEG_TO_RAD, 13 * CE_DEG_TO_RAD, 14 * CE_DEG_TO_RAD});
-        Vector3 data = ExtractEulerAnglesZYX(m.data);
-        CE_DEBUG("%f %f %f", data.x * CE_RAD_TO_DEG, data.y * CE_RAD_TO_DEG,
-                 data.z * CE_RAD_TO_DEG);
 
         CE_DEFINE_LOG_CATEGORY("CE_EDITOR", "Editor");
 
@@ -115,10 +62,13 @@ namespace Core
 
         SetupFonts();
 
+        ProjectSystem::New();
+        ProjectSystem::GetActiveProject()->GetState().StartScene = "Assets/CM2.ce_scene";
+
         // todo: Setup this with some kind of Project structure
-        World::Create("Test");
-        World::Activate("Test");
-        SceneOpen("Scene.ce_scene");
+        World::Create(ProjectSystem::GetActiveProject()->GetStartScene());
+        World::Activate(ProjectSystem::GetActiveProject()->GetStartScene());
+        SceneOpen(ProjectSystem::GetActiveProject()->GetStartScene());
         SceneStopRuntime();
     }
 
@@ -483,7 +433,15 @@ namespace Core
         }
 
         if (World::Exists(name))
+        {
+            // todo: Verify no memory leaks
+            World::DeactivateActive();
+            World::Remove(name);
+            World::Create(name);
+            SceneSerializer serializer(World::Get(name));
+            serializer.Deserialize(name);
             World::Activate(name);
+        }
         else
         {
             World::Create(name);
@@ -492,7 +450,7 @@ namespace Core
             World::Activate(name);
         }
 
-        ToastMessage::Add("Opened Scene");
+        ToastMessage::Add("Opened Scene: " + name);
 
         state.ActiveScenePath = name;
     }
@@ -507,7 +465,7 @@ namespace Core
             serializer.Serialize(state.ActiveScenePath);
         }
 
-        ToastMessage::Add("Saved Scene");
+        ToastMessage::Add("Saved Scene: " + state.ActiveScenePath);
     }
 
     void EditorLayer::SceneSaveAs()

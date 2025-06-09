@@ -138,7 +138,7 @@ namespace Core
         IsPrimary = o->IsPrimary;
     }
 
-    void ScriptComponent::Start() { ScriptEngine::RegisterScript(ClassName, owner); }
+    void ScriptComponent::Start() {}
 
     void ScriptComponent::From(ScriptComponent *other) { ClassName = other->ClassName; }
 } // namespace Core

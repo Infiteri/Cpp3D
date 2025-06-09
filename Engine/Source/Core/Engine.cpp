@@ -7,6 +7,7 @@
 #include "Core/Window/Window.h"
 #include "Layer/ImGuiLayer.h"
 #include "Platform/Library.h"
+#include "Project/ProjectSystem.h"
 #include "Renderer/Renderer.h"
 #include "Scene/World.h"
 #include "Script/ScriptEngine.h"
@@ -35,6 +36,7 @@ namespace Core
         EventSystem::Init();
         Renderer::Init();
         ScriptEngine::Init();
+        ProjectSystem::Init();
 
         World::Init();
     }
@@ -82,6 +84,8 @@ namespace Core
         LayerStack::Shutdown();
         EventSystem::Shutdown();
         ScriptEngine::Shutdown();
+        ProjectSystem::Shutdown();
+
         World::Shutdown();
     }
 

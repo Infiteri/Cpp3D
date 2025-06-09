@@ -50,6 +50,11 @@ namespace Core
         for (auto ac : actors)
         {
             ac->Start();
+
+            for (auto script : ac->GetComponents<ScriptComponent>())
+            {
+                ScriptEngine::RegisterScript(script->ClassName, ac);
+            }
         }
 
         ActivateSceneCamera();
