@@ -6,6 +6,7 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/Shader/ShaderSystem.h"
 #include "Scene/Actor.h"
+#include "Script/ScriptEngine.h"
 
 namespace Core
 {
@@ -117,8 +118,6 @@ namespace Core
         Camera.SetPosition(owner->GetTransform().Position);
         Camera.SetRotation(owner->GetTransform().Rotation);
         Camera.UpdateView();
-
-        // todo: Make camera use a matrix transform over a vector transform
     }
 
     void PerspectiveCameraComponent::UpdateCamera()
@@ -139,10 +138,7 @@ namespace Core
         IsPrimary = o->IsPrimary;
     }
 
-    void ScriptComponent::Start()
-    {
-        // think
-    }
+    void ScriptComponent::Start() { ScriptEngine::RegisterScript(ClassName, owner); }
 
     void ScriptComponent::From(ScriptComponent *other) { ClassName = other->ClassName; }
 } // namespace Core

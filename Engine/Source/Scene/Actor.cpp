@@ -41,6 +41,10 @@ namespace Core
         CE_COPY_COMPONENT(PointLightComponent);
         CE_COPY_COMPONENT(SpotLightComponent);
         CE_COPY_COMPONENT(PerspectiveCameraComponent);
+        CE_COPY_COMPONENT(ScriptComponent);
+
+        for (auto child : actor->children)
+            out->AddChild(Actor::From(child));
 
         return out;
     }
@@ -151,8 +155,6 @@ namespace Core
 
         state = State::Running;
 
-        _CalculateTransformMatrices();
-
         for (auto comp : components)
         {
             comp->Update();
@@ -166,12 +168,9 @@ namespace Core
 
     void Actor::Render()
     {
-        if (state == State::Stopped)
-        {
-            return;
-        }
-
         state = State::Running;
+
+        _CalculateTransformMatrices();
 
         for (auto comp : components)
         {
@@ -207,26 +206,22 @@ namespace Core
 
     PerspectiveCameraComponent *Actor::GetCameraComponentInHierarchy(bool primaryMatters)
     {
-        PerspectiveCameraComponent *wantedCamera = nullptr;
         auto thisActorCameras = GetComponents<PerspectiveCameraComponent>();
+
         for (auto cam : thisActorCameras)
         {
-            if (primaryMatters)
-            {
-                if (cam->IsPrimary)
-                    wantedCamera = cam;
+            if (!primaryMatters || (primaryMatters && cam->IsPrimary))
                 return cam;
-            }
-            else
-            {
-                return cam; // don't no care if its primary
-            }
         }
 
-        // recursive
         for (auto child : children)
-            wantedCamera = child->GetCameraComponentInHierarchy(primaryMatters);
+        {
+            PerspectiveCameraComponent *found =
+                child->GetCameraComponentInHierarchy(primaryMatters);
+            if (found)
+                return found;
+        }
 
-        return wantedCamera;
+        return nullptr;
     }
 } // namespace Core

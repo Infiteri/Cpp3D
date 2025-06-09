@@ -18,6 +18,14 @@ namespace Core
     // todo: As intended
     static bool firstLoad = true;
 
+    static bool StringMeetsFilterRequirement(const std::string &filter, const std::string &str)
+    {
+        if (filter.empty())
+            return true;
+
+        return str.find(filter) != std::string::npos;
+    }
+
     void ContentBrowserPanel::CreateFilePopup::Render()
     {
         if (!Active)
@@ -167,6 +175,12 @@ namespace Core
 
         ImGui::Begin("Content Browser");
 
+        if (state.CurrentDirectroy != state.BaseDirectory && ImGui::Button("<-"))
+            state.CurrentDirectroy = state.BaseDirectory;
+        ImGui::SameLine();
+        EditorUtils::ImGuiString("Filter", state.Filter);
+        ImGui::NewLine();
+
         float panelWidth = ImGui::GetContentRegionAvail().x;
         float cellSize = state.ThumbnailSize + state.Padding;
         int columnCount = (int)(panelWidth / cellSize);
@@ -229,65 +243,70 @@ namespace Core
             ImGui::End();
         }
 
-        if (state.CurrentDirectroy != state.BaseDirectory && ImGui::Button("<-"))
-            state.CurrentDirectroy = state.BaseDirectory;
-
         if (!state.CurrentDirectroy.empty())
         {
             int it = 0;
             for (auto path : Platform::GetDirectoryEntries(state.CurrentDirectroy))
             {
-                ImGui::PushID(++it);
-                Texture2D *texture = path.IsFolder ? &state.FolderTexture : &state.IconTexture;
+                bool renderItem = true;
 
-                if (ImGui::ImageButton((void *)(u64)texture->GetID(), size))
-                    if (path.IsFolder)
-                        state.CurrentDirectroy += "/" + path.Name;
+                if (!state.Filter.empty())
+                    renderItem = StringMeetsFilterRequirement(state.Filter, path.Name);
 
-                if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                if (renderItem)
                 {
-                    state.RightClickEntry.Name = path.Name;
-                    state.RightClickEntry.IsFolder = path.IsFolder;
-                    ImGui::OpenPopup("ContentPanelRightItem");
-                }
+                    ImGui::PushID(++it);
+                    Texture2D *texture = path.IsFolder ? &state.FolderTexture : &state.IconTexture;
 
-                if (ImGui::BeginPopup("ContentPanelRightItem"))
-                {
-                    if (ImGui::MenuItem("Copy"))
+                    if (ImGui::ImageButton((void *)(u64)texture->GetID(), size))
+                        if (path.IsFolder)
+                            state.CurrentDirectroy += "/" + path.Name;
+
+                    if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
                     {
-                        state.CopyFilePath = path.Name;
+                        state.RightClickEntry.Name = path.Name;
+                        state.RightClickEntry.IsFolder = path.IsFolder;
+                        ImGui::OpenPopup("ContentPanelRightItem");
                     }
 
-                    if (ImGui::MenuItem("Delete"))
+                    if (ImGui::BeginPopup("ContentPanelRightItem"))
                     {
-                        FileSystem::RemoveFile(state.RightClickEntry.Name);
-                        state.RightClickEntry.Name = "";
-                        state.RightClickEntry.IsFolder = false;
+                        if (ImGui::MenuItem("Copy"))
+                        {
+                            state.CopyFilePath = path.Name;
+                        }
+
+                        if (ImGui::MenuItem("Delete"))
+                        {
+                            FileSystem::RemoveFile(state.RightClickEntry.Name);
+                            state.RightClickEntry.Name = "";
+                            state.RightClickEntry.IsFolder = false;
+                        }
+
+                        ImGui::EndPopup();
                     }
 
-                    ImGui::EndPopup();
-                }
+                    if (ImGui::BeginDragDropSource())
+                    {
+                        ImGui::SetDragDropPayload("ContentPanelDragDrop", path.Name.c_str(),
+                                                  path.Name.size() + 1);
+                        ImGui::EndDragDropSource();
+                    }
 
-                if (ImGui::BeginDragDropSource())
-                {
-                    ImGui::SetDragDropPayload("ContentPanelDragDrop", path.Name.c_str(),
-                                              path.Name.size() + 1);
-                    ImGui::EndDragDropSource();
-                }
+                    if (!path.IsFolder)
+                    {
+                        std::string filePath;
+                        size_t lastSlash = path.Name.find_last_of("/\\");
+                        if (lastSlash != std::string::npos)
+                            filePath = path.Name.substr(lastSlash + 1);
+                        ImGui::TextWrapped(filePath.c_str());
+                    }
+                    else
+                        ImGui::TextWrapped(path.Name.c_str());
 
-                if (!path.IsFolder)
-                {
-                    std::string filePath;
-                    size_t lastSlash = path.Name.find_last_of("/\\");
-                    if (lastSlash != std::string::npos)
-                        filePath = path.Name.substr(lastSlash + 1);
-                    ImGui::TextWrapped(filePath.c_str());
+                    ImGui::NextColumn();
+                    ImGui::PopID();
                 }
-                else
-                    ImGui::TextWrapped(path.Name.c_str());
-
-                ImGui::NextColumn();
-                ImGui::PopID();
             }
         }
 

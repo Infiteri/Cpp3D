@@ -29,7 +29,7 @@ namespace Core
         out->environment.From(scene->environment);
 
         for (auto actor : scene->actors)
-            out->AddActor(Actor::From(actor));
+            out->AddActor(Actor::From(actor, true));
 
         return out;
     }
@@ -70,12 +70,12 @@ namespace Core
         {
             ac->Update();
         }
+
+        ScriptEngine::OnRuntimeUpdate();
     }
 
     void Scene::Render()
     {
-        if (state == State::Stopped)
-            return;
 
         // todo: Better, note that its here due to some memory leak fixes, move somewhere else after
         // fixing editor layer
@@ -105,6 +105,9 @@ namespace Core
         {
             ac->Stop();
         }
+
+        ScriptEngine::OnRuntimeStop();
+        ScriptEngine::ClearScriptSet();
     }
 
     void Scene::ActivateSceneCamera()
@@ -112,13 +115,24 @@ namespace Core
         PerspectiveCameraComponent *camera = nullptr;
 
         for (auto a : actors)
+        {
             camera = a->GetCameraComponentInHierarchy(true);
+            if (camera)
+                break;
+        }
 
         if (!camera)
+        {
             for (auto a : actors)
+            {
                 camera = a->GetCameraComponentInHierarchy(false);
+                if (camera)
+                    break;
+            }
+        }
 
-        CameraSystem::ActivatePerspectiveCameraInstance(&camera->Camera);
+        if (camera)
+            CameraSystem::ActivatePerspectiveCameraInstance(&camera->Camera);
     }
 
     void Scene::SetName(const std::string &n) { name = n; }

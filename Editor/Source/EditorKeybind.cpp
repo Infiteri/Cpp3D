@@ -45,6 +45,13 @@ namespace Core
         }
         break;
 
+        case Keys::F5:
+        {
+            (inst->GetSceneState() == EditorLayer::SceneState::Start) ? inst->SceneStopRuntime()
+                                                                      : inst->SceneStartRuntime();
+        }
+        break;
+
         default:
             break;
         }

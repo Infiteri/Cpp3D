@@ -74,6 +74,7 @@ namespace Core
 
         // -- Dockspace --
         void DockspaceRenderSceneViewport();
+        void HandleSceneViewportDragDrop();
         // ---------------
 
         // -- Scene --
@@ -94,6 +95,8 @@ namespace Core
         void UI_TopMenuBar();
         void UI_TopBar();
         // --------
+
+        SceneState GetSceneState();
 
         static EditorLayer *GetInstance();
     };

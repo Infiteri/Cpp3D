@@ -54,6 +54,7 @@ namespace Core
             std::string BaseDirectory = "Assets";
             std::string CurrentDirectroy = "Assets";
             std::string CopyFilePath = "";
+            std::string Filter = "";
 
             Texture2D IconTexture, FolderTexture;
 

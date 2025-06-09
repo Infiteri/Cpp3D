@@ -4,6 +4,14 @@
 #include "Script/ActorScript.h"
 #include <memory>
 
+#define CE_DEBUG_SCRIPT_SYS 1
+
+#if CE_DEBUG_SCRIPT_SYS == 1
+#define CE_SCR_DBG(msg, ...) CE_LOG("CE_SCRIPT", Trace, msg, ##__VA_ARGS__)
+#else
+#define C_SCR_DBG(msg, ...)
+#endif
+
 namespace Core
 {
     static ScriptEngine::State state;
@@ -26,20 +34,28 @@ namespace Core
 
     void ScriptEngine::OnRuntimeStart()
     {
+        CE_SCR_DBG("Starting script count = %i", state.Scripts.size());
         for (auto &script : state.Scripts)
             script.second->OnStart();
     }
 
     void ScriptEngine::OnRuntimeStop()
     {
+        CE_SCR_DBG("Stoping script count = %i", state.Scripts.size());
         for (auto &script : state.Scripts)
-            script.second->OnStart();
+            script.second->OnStop();
     }
 
     void ScriptEngine::OnRuntimeUpdate()
     {
         for (auto &script : state.Scripts)
-            script.second->OnUpdate();
+        {
+
+            if (script.second->Owner)
+                script.second->OnUpdate();
+            else
+                CE_LOG("CE_SCRIPT", Error, "Unable to update Actor script as the Owner is null");
+        }
     }
 
     void ScriptEngine::ClearScriptSet() { state.Scripts.clear(); }
@@ -51,7 +67,10 @@ namespace Core
         if (Exists(owner->GetID()))
             return;
 
+        instance->Owner = owner;
         state.Scripts[owner->GetID()] = std::unique_ptr<ActorScript>(instance);
+
+        CE_SCR_DBG("Registering script '%u'/'%s'", owner->GetID().Get(), owner->GetName().c_str());
     }
 
     void ScriptEngine::RegisterScript(const std::string &className, Actor *owner)

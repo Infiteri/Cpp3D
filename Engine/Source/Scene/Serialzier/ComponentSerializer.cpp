@@ -64,6 +64,8 @@ namespace Core
 
         CE_SERIALIZE_FIELD("MeshComponentCount", count.Mesh);
         CE_SERIALIZE_FIELD("PointLightComponentCount", count.PointLight);
+        CE_SERIALIZE_FIELD("SpotLightComponentCount", count.SpotLight);
+        CE_SERIALIZE_FIELD("PerspectiveCameraComponentCount", count.PerspectiveCamera);
         CE_SERIALIZE_FIELD("ScriptComponentCount", count.Script);
     }
 

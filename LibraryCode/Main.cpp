@@ -1,11 +1,19 @@
+#include "Base.h"
+#include "Core/Input.h"
+#include "Core/Logger.h"
 #include "Script/ActorScript.h"
-
-#include <iostream>
 
 class Test : public Core::ActorScript
 {
 public:
-    void OnStart() { std::cout << "Hello world"; }
+    void OnUpdate()
+    {
+        CE_VERIFY(Owner);
+
+        auto &t = Owner->GetTransform().Position;
+        if (Core::Input::GetKey(Core::Keys::A))
+            t.x++;
+    }
 };
 
 CE_DEFINE_ACTOR_SCRIPT(Test);

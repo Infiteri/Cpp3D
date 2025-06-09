@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include "Base.h"
+#include "Core/Logger.h"
 #include "Renderer/Geometry/Geometry.h"
 #include "Renderer/Material/Material.h"
 #include "Renderer/Material/MaterialSystem.h"

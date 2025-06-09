@@ -8,6 +8,8 @@
 #include "Core/Util/StringUtils.h"
 #include "EditorSettings.h"
 #include "EditorToast.H"
+#include "Math/Math.h"
+#include "Math/Matrix.h"
 #include "Renderer/Camera/CameraSystem.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Texture/CubemapTexture.h"
@@ -34,9 +36,63 @@ namespace Core
     static EditorLayer::State state;
     static EditorLayer *Instance = nullptr;
 
+    float NormalizeAngleRadians(float angle)
+    {
+        constexpr float TWO_PI = CE_PI * 2;
+        angle = fmod(angle, TWO_PI);
+        if (angle < 0)
+            angle += TWO_PI;
+        return angle;
+    }
+
+    Vector3 ExtractEulerAnglesZYX(const float *data)
+    {
+        Vector3 angles;
+
+        // Map matrix elements (column-major)
+        float r00 = data[0];
+        float r01 = data[4];
+        float r02 = data[8];
+        float r10 = data[1];
+        float r11 = data[5];
+        float r12 = data[9];
+        float r20 = data[2];
+        float r21 = data[6];
+        float r22 = data[10];
+
+        float beta = -asin(r20);
+        float cos_beta = cos(beta);
+        const float epsilon = 1e-6f;
+
+        float alpha, gamma;
+
+        if (fabs(cos_beta) > epsilon)
+        {
+            alpha = atan2(r21, r22);
+            gamma = atan2(r10, r00);
+        }
+        else
+        {
+            alpha = 0.0f;
+            gamma = atan2(-r01, r11);
+        }
+
+        angles.x = NormalizeAngleRadians(alpha);
+        angles.y = NormalizeAngleRadians(beta);
+        angles.z = NormalizeAngleRadians(gamma);
+
+        return angles;
+    }
+
     void EditorLayer::OnAttach()
     {
         Instance = this;
+
+        Matrix4 m =
+            Matrix4::RotateZYX({12 * CE_DEG_TO_RAD, 13 * CE_DEG_TO_RAD, 14 * CE_DEG_TO_RAD});
+        Vector3 data = ExtractEulerAnglesZYX(m.data);
+        CE_DEBUG("%f %f %f", data.x * CE_RAD_TO_DEG, data.y * CE_RAD_TO_DEG,
+                 data.z * CE_RAD_TO_DEG);
 
         CE_DEFINE_LOG_CATEGORY("CE_EDITOR", "Editor");
 
@@ -192,6 +248,51 @@ namespace Core
         state.Dock.End();
     }
 
+    void EditorLayer::HandleSceneViewportDragDrop()
+    {
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload *load = ImGui::AcceptDragDropPayload("ContentPanelDragDrop"))
+            {
+                const char *path = (const char *)load->Data;
+                std::string ext = StringUtils::GetFilenameExtension(path);
+                if (ext == "ce_scene")
+                    SceneOpen(path);
+                else if (ext == "ce_cubemap")
+                {
+                    auto &cubemap = state.Popup.Cubemap;
+                    cubemap.Active = true;
+                    cubemap.ConfigPath = path;
+                    CubemapLoader loader;
+                    CubemapConfiguration config;
+                    loader.Deserialize(config, path);
+                    cubemap.Config = config;
+
+                    const char *strs[] = {config.Right.c_str(), config.Left.c_str(),
+                                          config.Top.c_str(),   config.Bottom.c_str(),
+                                          config.Front.c_str(), config.Back.c_str()};
+
+                    for (int i = 0; i < 6; i++)
+                    {
+                        cubemap.Textures[i].Destroy();
+                        cubemap.Textures[i].Load(strs[i]);
+                    }
+                }
+                else if (ext == "ce_mat")
+                {
+                    auto &material = state.Popup.Material;
+                    material.Active = true;
+                    material.Path = path;
+
+                    MaterialLoader loader;
+                    loader.Deserialize(path, material.Config);
+                }
+            }
+
+            ImGui::EndDragDropTarget();
+        }
+    }
+
     void EditorLayer::DockspaceRenderSceneViewport()
     {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, {0, 0});
@@ -213,57 +314,7 @@ namespace Core
                      ImVec2{1, 0});
 
         // todo: Make this a function
-        if (ImGui::BeginDragDropTarget())
-        {
-
-            if (const ImGuiPayload *load = ImGui::AcceptDragDropPayload("ContentPanelDragDrop"))
-            {
-                const char *path = (const char *)load->Data;
-                std::string ext = StringUtils::GetFilenameExtension(path);
-                if (ext == "ce_scene")
-                    SceneOpen(path);
-                else if (ext == "ce_cubemap")
-                {
-                    auto &cubemap = state.Popup.Cubemap;
-                    cubemap.Active = true;
-                    cubemap.ConfigPath = path;
-                    CubemapLoader loader;
-                    CubemapConfiguration config;
-                    loader.Deserialize(config, path);
-
-                    cubemap.Config = config;
-
-                    cubemap.Textures[0].Destroy();
-                    cubemap.Textures[0].Load(config.Right);
-
-                    cubemap.Textures[1].Destroy();
-                    cubemap.Textures[1].Load(config.Left);
-
-                    cubemap.Textures[2].Destroy();
-                    cubemap.Textures[2].Load(config.Top);
-
-                    cubemap.Textures[3].Destroy();
-                    cubemap.Textures[3].Load(config.Bottom);
-
-                    cubemap.Textures[4].Destroy();
-                    cubemap.Textures[4].Load(config.Front);
-
-                    cubemap.Textures[5].Destroy();
-                    cubemap.Textures[5].Load(config.Back);
-                }
-                else if (ext == "ce_mat")
-                {
-                    auto &material = state.Popup.Material;
-                    material.Active = true;
-                    material.Path = path;
-
-                    MaterialLoader loader;
-                    loader.Deserialize(path, material.Config);
-                }
-            }
-
-            ImGui::EndDragDropTarget();
-        }
+        HandleSceneViewportDragDrop();
 
         // note: Gizmo stuff
         {
@@ -509,6 +560,8 @@ namespace Core
         if (id.Get() != 0)
             panel->SelectActor(World::GetActive()->GetActorInAllHierarchy(id));
     }
+
+    EditorLayer::SceneState EditorLayer::GetSceneState() { return state.CurrentSceneState; }
 
     EditorLayer *EditorLayer::GetInstance() { return Instance; }
 

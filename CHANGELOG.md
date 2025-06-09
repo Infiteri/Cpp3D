@@ -97,3 +97,7 @@
 4. Fixed bugs
 5. Basic scripting support
 6. Added script components and details
+
+# 0.1.2 - 29.05.2025
+
+1. Added Scripting and all details
