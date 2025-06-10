@@ -10,6 +10,7 @@
 #include "EditorToast.H"
 #include "Math/Math.h"
 #include "Math/Matrix.h"
+#include "Project/ProjectSerialzier.h"
 #include "Project/ProjectSystem.h"
 #include "Renderer/Camera/CameraSystem.h"
 #include "Renderer/Renderer.h"
@@ -62,10 +63,8 @@ namespace Core
 
         SetupFonts();
 
-        ProjectSystem::New();
-        ProjectSystem::GetActiveProject()->GetState().StartScene = "Assets/CM2.ce_scene";
-
-        // todo: Setup this with some kind of Project structure
+        ProjectSerilaizer proj(ProjectSystem::GetActiveProject());
+        proj.Deserialize("Proj.ce_proj");
         World::Create(ProjectSystem::GetActiveProject()->GetStartScene());
         World::Activate(ProjectSystem::GetActiveProject()->GetStartScene());
         SceneOpen(ProjectSystem::GetActiveProject()->GetStartScene());
