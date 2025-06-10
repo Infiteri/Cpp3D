@@ -63,7 +63,10 @@ namespace Core
 
         SetupFonts();
 
-        ProjectSerilaizer proj(ProjectSystem::GetActiveProject());
+        state.ActiveProjectPath = "Proj.ce_proj";
+
+        ProjectSystem::New();
+        ProjectSerializer proj(ProjectSystem::GetActiveProject());
         proj.Deserialize("Proj.ce_proj");
         World::Create(ProjectSystem::GetActiveProject()->GetStartScene());
         World::Activate(ProjectSystem::GetActiveProject()->GetStartScene());
@@ -328,6 +331,9 @@ namespace Core
             if (ImGui::MenuItem("Editor"))
                 ImGui::OpenPopup("EditorPopup");
 
+            if (ImGui::MenuItem("Project"))
+                ImGui::OpenPopup("ProjectPopup");
+
             if (ImGui::MenuItem("Other"))
                 ImGui::OpenPopup("OtherPopup");
 
@@ -355,6 +361,14 @@ namespace Core
 
                 if (ImGui::MenuItem("Theme"))
                     state.Settings.Theme.Active = true;
+
+                ImGui::EndPopup();
+            }
+
+            if (ImGui::BeginPopup("ProjectPopup"))
+            {
+                if (ImGui::MenuItem("Configure"))
+                    state.Popup.Project.Active = true;
 
                 ImGui::EndPopup();
             }
@@ -474,6 +488,31 @@ namespace Core
             SceneSave();
     }
 
+    void EditorLayer::ProjectNew()
+    {
+        if (!state.ActiveProjectPath.empty())
+        {
+            ProjectSave();
+            state.ActiveProjectPath = "";
+        }
+
+        ProjectSystem::New();
+    }
+
+    void EditorLayer::ProjectOpen()
+    {
+        if (!state.ActiveProjectPath.empty())
+            ProjectSave();
+
+        std::string path = Platform::OpenFileDialog("Project \0*.ce_proj\0");
+    }
+
+    void EditorLayer::ProjectOpen(const std::string &name) {}
+
+    void EditorLayer::ProjectSave() {}
+
+    void EditorLayer::ProjectSaveAs() {}
+
     void EditorLayer::SceneStartRuntime()
     {
         if (state.CurrentSceneState == SceneState::Start)
@@ -521,5 +560,7 @@ namespace Core
     EditorLayer::SceneState EditorLayer::GetSceneState() { return state.CurrentSceneState; }
 
     EditorLayer *EditorLayer::GetInstance() { return Instance; }
+
+    EditorLayer::State *EditorLayer::GetState() { return &state; }
 
 } // namespace Core

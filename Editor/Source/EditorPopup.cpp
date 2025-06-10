@@ -1,17 +1,24 @@
 #include "EditorPopup.h"
 #include "Core/Util/StringUtils.h"
+#include "EditorLayer.h"
 #include "EditorToast.H"
 #include "EditorUtils.h"
 #include "Platform/Platform.h"
+#include "Project/ProjectSerialzier.h"
+#include "Project/ProjectSystem.h"
 #include "Resource/CeImageLoader.h"
 #include "Resource/CubemapLoader.h"
 #include "Resource/MaterialLoader.h"
 
 #include <imgui.h>
+#include <vector>
 
 namespace Core
 {
-    static void CeImageConvertorDragDropStr(std::string &str)
+    static std::vector<std::string> ImageExtensions = {"png", "jpg", "jpeg", "ce_image"};
+    static std::vector<std::string> SceneExtensions = {"ce_scene"};
+
+    static bool CeDragDropExtension(std::string &str, const std::vector<std::string> &extensions)
     {
         if (ImGui::BeginDragDropTarget())
         {
@@ -19,11 +26,20 @@ namespace Core
             {
                 const char *path = (const char *)payload->Data;
                 std::string ext = StringUtils::GetFilenameExtension(path);
-                if (EditorUtils::StringIsImageExtension(ext))
-                    str = path;
+                for (auto &ext2 : extensions)
+                {
+                    if (ext == ext2)
+                    {
+                        str = path;
+
+                        return true;
+                    }
+                }
             }
             ImGui::EndDragDropTarget();
         }
+
+        return false;
     }
 
     void CeImageConvertorPopup::Render()
@@ -36,10 +52,10 @@ namespace Core
         ImGui::Text("This will convert the specified image to a 'ce_image'");
 
         EditorUtils::ImGuiString("Input Image", Input);
-        CeImageConvertorDragDropStr(Input);
+        CeDragDropExtension(Input, ImageExtensions);
 
         EditorUtils::ImGuiString("Output Image", Output);
-        CeImageConvertorDragDropStr(Output);
+        CeDragDropExtension(Output, ImageExtensions);
 
         if (ImGui::Button("Convert"))
         {
@@ -75,20 +91,10 @@ namespace Core
 
         ImGui::Image((void *)(u64)(u32)texture->GetID(), size);
 
-        if (ImGui::BeginDragDropTarget())
+        if (CeDragDropExtension(path, ImageExtensions))
         {
-            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("ContentPanelDragDrop"))
-            {
-                const char *str = (const char *)payload->Data;
-                std::string ext = StringUtils::GetFilenameExtension(str);
-                if (EditorUtils::StringIsImageExtension(ext))
-                {
-                    path = str;
-                    texture->Destroy();
-                    texture->Load(path);
-                }
-            }
-            ImGui::EndDragDropTarget();
+            texture->Destroy();
+            texture->Load(path);
         }
     }
 
@@ -188,11 +194,41 @@ namespace Core
         ImGui::End();
     }
 
+    void ProjectConfigPopup::Render()
+    {
+        if (!Active || !ProjectSystem::GetActiveProject())
+            return;
+
+        auto &state = ProjectSystem::GetActiveProject()->GetState();
+
+        ImGui::Begin("Project Configurator");
+
+        EditorUtils::ImGuiString("Name", state.Name);
+        EditorUtils::ImGuiString("Asset Path", state.AssetPath);
+        EditorUtils::ImGuiString("Start Scene", state.StartScene);
+        CeDragDropExtension(state.StartScene, SceneExtensions);
+
+        if (ImGui::Button("Save"))
+        {
+            Active = false;
+            ProjectSerializer ser(ProjectSystem::GetActiveProject());
+            ser.Serialize(EditorLayer::GetState()->ActiveProjectPath);
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel"))
+            Active = false;
+
+        ImGui::End();
+    }
+
     void EditorPopupSystem::OnImGuiRender()
     {
         Image.Render();
         Cubemap.Render();
         Material.Render();
+        Project.Render();
     }
 
 } // namespace Core

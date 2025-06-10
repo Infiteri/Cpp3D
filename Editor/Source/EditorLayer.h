@@ -41,6 +41,7 @@ namespace Core
             EditorKeybind Keybind;
 
             std::string ActiveScenePath = "";
+            std::string ActiveProjectPath = "";
 
             ImVec2 ViewportSize;
 
@@ -91,6 +92,14 @@ namespace Core
         void OnEditorRuntime();
         // -----------
 
+        // -- Project --
+        void ProjectNew();
+        void ProjectOpen();
+        void ProjectOpen(const std::string &name);
+        void ProjectSave();
+        void ProjectSaveAs();
+        // -------------
+
         // -- UI --
         void UI_TopMenuBar();
         void UI_TopBar();
@@ -99,5 +108,6 @@ namespace Core
         SceneState GetSceneState();
 
         static EditorLayer *GetInstance();
+        static State *GetState();
     };
 } // namespace Core

@@ -37,12 +37,20 @@ namespace Core
         void Render();
     };
 
+    struct ProjectConfigPopup : public EditorPopup
+    {
+        std::string Path;
+
+        void Render();
+    };
+
     class EditorPopupSystem
     {
     public:
         CeImageConvertorPopup Image;
         CubemapConfigPopup Cubemap;
         MaterialConfigPopup Material;
+        ProjectConfigPopup Project;
 
         void OnImGuiRender();
     };
