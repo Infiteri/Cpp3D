@@ -43,6 +43,8 @@ namespace Core
 
         static void DeactivateActive();
 
+        static void ClearScenes();
+
         // note: scene specific functions to make life easier
         static void UpdateActive();
         static void RenderActive();

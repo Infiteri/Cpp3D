@@ -19,11 +19,17 @@ namespace Core
 
     Project *ProjectSystem::GetActiveProject() { return state.ActiveProject; }
 
-    void ProjectSystem::New()
+    void ProjectSystem::DestroyActiveProject()
     {
         if (state.ActiveProject)
             delete state.ActiveProject;
 
+        state.ActiveProject = nullptr;
+    }
+
+    void ProjectSystem::New()
+    {
+        DestroyActiveProject();
         state.ActiveProject = new Project();
     }
 

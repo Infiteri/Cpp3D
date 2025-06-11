@@ -1,5 +1,4 @@
 #include "EditorLayer.h"
-#include "Base.h"
 #include "Core/Engine.h"
 #include "Core/Event/CeEvents.h"
 #include "Core/Event/Event.h"
@@ -29,6 +28,7 @@
 
 #include <ImGuizmo.h>
 #include <imgui.h>
+#include <numbers>
 #include <string>
 
 #define CE_SETTINGS_PATH "EditorSettings.ce_settings"
@@ -63,11 +63,8 @@ namespace Core
 
         SetupFonts();
 
-        state.ActiveProjectPath = "Proj.ce_proj";
+        ProjectOpen("Project.ce_proj");
 
-        ProjectSystem::New();
-        ProjectSerializer proj(ProjectSystem::GetActiveProject());
-        proj.Deserialize("Proj.ce_proj");
         World::Create(ProjectSystem::GetActiveProject()->GetStartScene());
         World::Activate(ProjectSystem::GetActiveProject()->GetStartScene());
         SceneOpen(ProjectSystem::GetActiveProject()->GetStartScene());
@@ -367,6 +364,18 @@ namespace Core
 
             if (ImGui::BeginPopup("ProjectPopup"))
             {
+                if (ImGui::MenuItem("New..."))
+                    ProjectNew();
+
+                if (ImGui::MenuItem("Open..."))
+                    ProjectOpen();
+
+                if (ImGui::MenuItem("Save..."))
+                    ProjectSave();
+
+                if (ImGui::MenuItem("Save As..."))
+                    ProjectSaveAs();
+
                 if (ImGui::MenuItem("Configure"))
                     state.Popup.Project.Active = true;
 
@@ -493,25 +502,74 @@ namespace Core
         if (!state.ActiveProjectPath.empty())
         {
             ProjectSave();
-            state.ActiveProjectPath = "";
+            OnProjectClose();
         }
 
         ProjectSystem::New();
+
+        state.ActiveProjectPath = "";
     }
 
     void EditorLayer::ProjectOpen()
     {
+        std::string path = Platform::OpenFileDialog("Project \0*.ce_proj\0");
+        if (!path.empty())
+            ProjectOpen(path);
+    }
+
+    void EditorLayer::ProjectOpen(const std::string &name)
+    {
         if (!state.ActiveProjectPath.empty())
             ProjectSave();
 
-        std::string path = Platform::OpenFileDialog("Project \0*.ce_proj\0");
+        OnProjectClose();
+        ProjectSystem::Load(name);
+        state.ActiveProjectPath = name;
+        OnProjectOpen();
     }
 
-    void EditorLayer::ProjectOpen(const std::string &name) {}
+    void EditorLayer::ProjectSave()
+    {
+        if (state.ActiveProjectPath.empty())
+            ProjectSaveAs();
+        else
+        {
+            ProjectSerializer ser(ProjectSystem::GetActiveProject());
+            ser.Serialize(state.ActiveProjectPath);
+        }
+    }
 
-    void EditorLayer::ProjectSave() {}
+    void EditorLayer::ProjectSaveAs()
+    {
+        std::string path = Platform::SaveFileDialog("Project \0*.ce_proj\0");
+        if (!path.empty())
+        {
+            state.ActiveProjectPath = path;
+            ProjectSave();
+        }
+    }
 
-    void EditorLayer::ProjectSaveAs() {}
+    void EditorLayer::OnProjectClose()
+    {
+        auto proj = ProjectSystem::GetActiveProject();
+        CE_VERIFY(proj);
+
+        // todo: Make sure all scenes are saved
+        SceneSave();
+
+        // note: Removes old project scene
+        World::ClearScenes();
+
+        ProjectSystem::DestroyActiveProject();
+    }
+
+    void EditorLayer::OnProjectOpen()
+    {
+        auto proj = ProjectSystem::GetActiveProject();
+        CE_VERIFY(proj);
+
+        SceneOpen(proj->GetStartScene());
+    }
 
     void EditorLayer::SceneStartRuntime()
     {

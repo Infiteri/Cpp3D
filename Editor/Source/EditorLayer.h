@@ -98,6 +98,9 @@ namespace Core
         void ProjectOpen(const std::string &name);
         void ProjectSave();
         void ProjectSaveAs();
+
+        void OnProjectClose();
+        void OnProjectOpen();
         // -------------
 
         // -- UI --

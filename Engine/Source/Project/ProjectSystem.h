@@ -18,6 +18,7 @@ namespace Core
         static void Shutdown();
 
         static Project *GetActiveProject();
+        static void DestroyActiveProject();
 
         static void New();
         static void Load(const std::string &name);

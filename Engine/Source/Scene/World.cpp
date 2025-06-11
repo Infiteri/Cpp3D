@@ -8,17 +8,7 @@ namespace Core
 
     void World::Init() { state.ActiveScene = nullptr; }
 
-    void World::Shutdown()
-    {
-        for (auto scene : state.Scenes)
-            delete scene.second;
-
-        if (state.ActiveScene != nullptr)
-            delete state.ActiveScene;
-
-        state.ActiveScene = nullptr;
-        state.Scenes.clear();
-    }
+    void World::Shutdown() { ClearScenes(); }
 
     void World::Editor_ActivateFromInstance(Scene *scene)
     {
@@ -109,6 +99,25 @@ namespace Core
 
         state.ActiveScene->Stop();
         state.ActiveScene = nullptr;
+    }
+
+    void World::ClearScenes()
+    {
+        for (auto scene : state.Scenes)
+        {
+            scene.second->Stop();
+            delete scene.second;
+            scene.second = nullptr;
+        }
+
+        if (state.ActiveScene != nullptr)
+        {
+            state.ActiveScene->Stop();
+            delete state.ActiveScene;
+        }
+
+        state.ActiveScene = nullptr;
+        state.Scenes.clear();
     }
 
     void World::UpdateActive()
