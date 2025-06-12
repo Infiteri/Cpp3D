@@ -20,6 +20,8 @@ namespace Core
         EditorCamera(PerspectiveCamera *target);
         ~EditorCamera() = default;
 
+        static void CreateEditorCamera();
+
         void SetTarget(PerspectiveCamera *target);
 
         inline PerspectiveCamera *GetTarget() { return cam; };

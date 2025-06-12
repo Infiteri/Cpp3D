@@ -1,14 +1,25 @@
 #include "EditorCamera.h"
 #include "Base.h"
 
-#include "Core/Engine.h"
 #include "Core/Input.h"
+
+#include "Renderer/Camera/CameraSystem.h"
+#include "Renderer/Renderer.h"
+
+#define CE_CAM_NAME "CeEditorCamera"
 
 namespace Core
 {
     EditorCamera::EditorCamera(PerspectiveCamera *target) : cam(target) {};
 
     void EditorCamera::SetTarget(PerspectiveCamera *target) { cam = target; }
+
+    void EditorCamera::CreateEditorCamera()
+    {
+        CameraSystem::AddPerspectiveCamera(
+            CE_CAM_NAME, {90, Renderer::GetViewport().GetAspect(), 0.01f, 1000.0f});
+        CameraSystem::ActivatePerspectiveCamera(CE_CAM_NAME);
+    }
 
     void EditorCamera::Update()
     {

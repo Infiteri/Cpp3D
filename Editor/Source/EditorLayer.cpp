@@ -5,6 +5,7 @@
 #include "Core/Input.h"
 #include "Core/Logger.h"
 #include "Core/Util/StringUtils.h"
+#include "EditorCamera.h"
 #include "EditorSettings.h"
 #include "EditorToast.H"
 #include "Math/Math.h"
@@ -44,11 +45,7 @@ namespace Core
 
         CE_DEFINE_LOG_CATEGORY("CE_EDITOR", "Editor");
 
-        CameraSystem::AddPerspectiveCamera(
-            "EditorCamera", {90, Renderer::GetViewport().GetAspect(), 0.01f, 1000.0f});
-        CameraSystem::ActivatePerspectiveCamera("EditorCamera");
-        CameraSystem::GetActivePerspective()->SetPosition({0, 0, 0});
-
+        EditorCamera::CreateEditorCamera();
         state.Camera = CameraSystem::GetActivePerspective();
 
         state.Settings.RegisterThemeColors();
@@ -64,11 +61,6 @@ namespace Core
         SetupFonts();
 
         ProjectOpen("Project.ce_proj");
-
-        World::Create(ProjectSystem::GetActiveProject()->GetStartScene());
-        World::Activate(ProjectSystem::GetActiveProject()->GetStartScene());
-        SceneOpen(ProjectSystem::GetActiveProject()->GetStartScene());
-        SceneStopRuntime();
     }
 
     void EditorLayer::OnDetach() {}
@@ -364,12 +356,6 @@ namespace Core
 
             if (ImGui::BeginPopup("ProjectPopup"))
             {
-                if (ImGui::MenuItem("New..."))
-                    ProjectNew();
-
-                if (ImGui::MenuItem("Open..."))
-                    ProjectOpen();
-
                 if (ImGui::MenuItem("Save..."))
                     ProjectSave();
 
@@ -512,6 +498,9 @@ namespace Core
 
     void EditorLayer::ProjectOpen()
     {
+        if (!state.ActiveProjectPath.empty())
+            ProjectSave();
+
         std::string path = Platform::OpenFileDialog("Project \0*.ce_proj\0");
         if (!path.empty())
             ProjectOpen(path);
@@ -557,10 +546,10 @@ namespace Core
         // todo: Make sure all scenes are saved
         SceneSave();
 
+        ProjectSystem::DestroyActiveProject();
+
         // note: Removes old project scene
         World::ClearScenes();
-
-        ProjectSystem::DestroyActiveProject();
     }
 
     void EditorLayer::OnProjectOpen()
@@ -569,6 +558,10 @@ namespace Core
         CE_VERIFY(proj);
 
         SceneOpen(proj->GetStartScene());
+
+        CE_LOG("CE_EDITOR", Trace, "-- Opened Project '%s' --", proj->GetState().Name.c_str());
+        CE_LOG("CE_EDITOR", Trace, "----------- Scene '%s' --",
+               proj->GetState().StartScene.c_str());
     }
 
     void EditorLayer::SceneStartRuntime()
