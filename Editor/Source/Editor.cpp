@@ -9,20 +9,15 @@ namespace Core
     class Editor : public Application
     {
     public:
-        Editor() {};
+        ApplicationArguments args;
 
-        ~Editor() {};
+        Editor(ApplicationArguments &inArgs) { args = inArgs; };
 
-        void Init()
-        {
-            CE_DEBUG("Application initialized");
-            LayerStack::PushLayer(new EditorLayer());
-        }
-
-        void Update() {}
-
-        void Shutdown() {}
+        void Init() { LayerStack::PushLayer(new EditorLayer(args)); }
     };
 } // namespace Core
 
-Core::Application *Core::CreateApplication() { return new Core::Editor(); }
+Core::Application *Core::CreateApplication(Core::ApplicationArguments &args)
+{
+    return new Core::Editor(args);
+}

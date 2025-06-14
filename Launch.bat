@@ -1,5 +1,5 @@
 @ECHO OFF
 
 pushd Bin
-start Editor.exe
+start Editor.exe -p Proj.ce_proj
 popd

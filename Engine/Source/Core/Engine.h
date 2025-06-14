@@ -9,9 +9,17 @@ namespace Core
     class CE_API Engine
     {
     public:
+        /// @brief Engine internal way of representing project state
+        enum class ProjectState
+        {
+            Default,
+            UserLoaded
+        };
+
         struct State
         {
             std::unique_ptr<Window> Window;
+            ProjectState ProjState;
         };
 
     public:
@@ -29,6 +37,8 @@ namespace Core
         static void Update();
 
         static void Shutdown();
+
+        static ProjectState GetProjectState();
 
         /// @brief: Returns a pointer to the active Window.
         /// @note: The Engine is the owner of this object. Do not call 'delete' on this pointer.

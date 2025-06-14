@@ -101,3 +101,8 @@
 # 0.1.2 - 09.06.2025
 
 1. Added Scripting and all details
+
+# 0.1.3 - 14.06.2025
+
+1. Added Project and all details
+2. Fixed bugs

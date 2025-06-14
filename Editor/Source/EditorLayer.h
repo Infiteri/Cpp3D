@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Application.h"
 #include "Core/Event/Event.h"
 #include "Core/Layer/Layer.h"
 #include "EditorCamera.h"
@@ -27,8 +28,16 @@ namespace Core
             Stop
         };
 
+        struct AppArgsFormat
+        {
+            std::string ProjectPath;
+        };
+
         struct State
         {
+            ApplicationArguments Args;
+            AppArgsFormat ArgsFormatted;
+
             PanelSystem Panels;
 
             SceneState CurrentSceneState = SceneState::Stop;
@@ -55,8 +64,7 @@ namespace Core
         };
 
     public:
-        EditorLayer() {};
-        ~EditorLayer() {};
+        EditorLayer(ApplicationArguments &inArgs);
 
         void OnAttach();
         void OnDetach();

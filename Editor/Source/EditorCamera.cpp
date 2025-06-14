@@ -3,10 +3,9 @@
 
 #include "Core/Input.h"
 
+#include "Math/Math.h"
 #include "Renderer/Camera/CameraSystem.h"
 #include "Renderer/Renderer.h"
-
-#define CE_CAM_NAME "CeEditorCamera"
 
 namespace Core
 {
@@ -74,7 +73,7 @@ namespace Core
                 cam->GetRotation().y += delta.x * Sensitivity;
                 cam->GetRotation().x -= delta.y * Sensitivity;
 
-                float clamp = 90 * (3.14 / 180);
+                float clamp = 90 * CE_DEG_TO_RAD;
                 if (cam->GetRotation().x < -clamp)
                     cam->GetRotation().x = -clamp;
                 if (cam->GetRotation().x > clamp)

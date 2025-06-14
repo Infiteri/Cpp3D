@@ -1,5 +1,6 @@
 #include "ProjectSystem.h"
 #include "Core/Logger.h"
+#include "Project/ProjectSerialzier.h"
 
 namespace Core
 {
@@ -39,6 +40,8 @@ namespace Core
             delete state.ActiveProject;
 
         state.ActiveProject = new Project();
-        // todo : do here
+
+        ProjectSerializer ser(state.ActiveProject);
+        ser.Deserialize(name);
     }
 } // namespace Core

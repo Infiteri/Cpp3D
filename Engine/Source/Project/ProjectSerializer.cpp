@@ -29,6 +29,7 @@ namespace Core
         CE_SERIALIZE_FIELD("Name", project->GetState().Name);
         CE_SERIALIZE_FIELD("AssetPath", project->GetState().AssetPath);
         CE_SERIALIZE_FIELD("StartScene", project->GetState().StartScene);
+        CE_SERIALIZE_FIELD("LibraryPath", project->GetState().LibraryPath);
 
         out << YAML::EndMap;
         out << YAML::EndMap;
@@ -68,5 +69,6 @@ namespace Core
         project->GetState().Name = data["Name"].as<std::string>();
         project->GetState().AssetPath = data["AssetPath"].as<std::string>();
         project->GetState().StartScene = data["StartScene"].as<std::string>();
+        project->GetState().LibraryPath = data["LibraryPath"].as<std::string>();
     }
 } // namespace Core

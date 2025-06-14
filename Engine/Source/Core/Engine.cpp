@@ -53,7 +53,24 @@ namespace Core
         InitializeSubsystems();
     }
 
-    void Engine::Init() { ScriptEngine::LoadLibrary("Lib.dll"); }
+    void Engine::Init()
+    {
+        // todo: Some kind of project initialization code here? maybe runtime
+        // note: Post project loading here
+        {
+            auto project = ProjectSystem::GetActiveProject();
+
+            if (!project)
+            {
+                CE_WARN("No active project specified, creating empty project");
+                ProjectSystem::New();
+                project = ProjectSystem::GetActiveProject();
+            }
+
+            if (!project->GetLibraryPath().empty())
+                ScriptEngine::LoadLibrary(project->GetLibraryPath());
+        }
+    }
 
     bool Engine::ShouldRun() { return state.Window->ShouldRun(); }
 
@@ -91,4 +108,5 @@ namespace Core
 
     Window *Engine::GetWindow() { return state.Window.get(); }
 
+    Engine::ProjectState Engine::GetProjectState() { return state.ProjState; }
 } // namespace Core

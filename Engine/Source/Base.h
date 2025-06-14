@@ -1,6 +1,6 @@
 #pragma once
 
-#define CE_VERION "0.1.1 - 29.05.2025"
+#define CE_VERION "0.1.3 - 14.06.2025"
 
 #define CE_API __declspec(dllexport)
 

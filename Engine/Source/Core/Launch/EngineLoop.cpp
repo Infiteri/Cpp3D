@@ -11,8 +11,8 @@ namespace Core
     void EngineLoop::Start()
     {
         Engine::PreInit();
-        Engine::Init();
         app->Init();
+        Engine::Init();
     }
 
     void EngineLoop::Run()

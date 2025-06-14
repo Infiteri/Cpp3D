@@ -2,6 +2,8 @@
 
 #include "Renderer/Camera/PerspectiveCamera.h"
 
+#define CE_CAM_NAME "CeEditorCamera"
+
 namespace Core
 {
     class EditorCamera

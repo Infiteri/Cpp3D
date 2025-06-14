@@ -2,8 +2,17 @@
 
 #include "Base.h"
 
+#include <string>
+#include <vector>
+
 namespace Core
 {
+    struct ApplicationArguments
+    {
+        int Count;
+        std::vector<std::string> Arguments;
+    };
+
     class CE_API Application
     {
     public:
@@ -15,5 +24,5 @@ namespace Core
         virtual void Destroy() {};
     };
 
-    Application *CreateApplication();
+    Application *CreateApplication(ApplicationArguments &arguments);
 } // namespace Core

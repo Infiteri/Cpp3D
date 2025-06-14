@@ -39,6 +39,27 @@ namespace Core
     static EditorLayer::State state;
     static EditorLayer *Instance = nullptr;
 
+    static void FormatAppArguments()
+    {
+        auto GetStringNext = [&](int index, std::string &target)
+        {
+            if (state.Args.Arguments.size() <= index)
+                target = "";
+            else
+                target = state.Args.Arguments[index];
+        };
+
+        for (int i = 0; i < state.Args.Arguments.size(); i++)
+        {
+            auto &str = state.Args.Arguments[i];
+
+            if (str == "-p")
+                GetStringNext(++i, state.ArgsFormatted.ProjectPath);
+        }
+    }
+
+    EditorLayer::EditorLayer(ApplicationArguments &inArgs) { state.Args = inArgs; }
+
     void EditorLayer::OnAttach()
     {
         Instance = this;
@@ -60,7 +81,26 @@ namespace Core
 
         SetupFonts();
 
-        ProjectOpen("Project.ce_proj");
+        FormatAppArguments();
+
+        {
+            auto &args = state.ArgsFormatted;
+
+            CE_DEBUG(args.ProjectPath.c_str());
+
+            if (!args.ProjectPath.empty())
+                ProjectOpen(args.ProjectPath);
+            else
+            {
+                // todo: Think of something here
+                // todo : Prompt user for project
+                ProjectNew();
+                SceneNew();
+
+                CE_LOG("CE_EDITOR", Warn,
+                       "No project specified for editor, creating empty project");
+            }
+        }
     }
 
     void EditorLayer::OnDetach() {}
@@ -583,7 +623,7 @@ namespace Core
 
     void EditorLayer::SceneStopRuntime()
     {
-        CameraSystem::ActivatePerspectiveCamera("EditorCamera");
+        CameraSystem::ActivatePerspectiveCamera(CE_CAM_NAME);
 
         if (state.CurrentSceneState == SceneState::Stop)
             return;
@@ -613,5 +653,4 @@ namespace Core
     EditorLayer *EditorLayer::GetInstance() { return Instance; }
 
     EditorLayer::State *EditorLayer::GetState() { return &state; }
-
 } // namespace Core
