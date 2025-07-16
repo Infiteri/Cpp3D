@@ -1,13 +1,7 @@
-
-BUILD_DIR := Bin
-OBJ_DIR := Bin-Obj
-
 ASSEMBLY := Editor
 EXTENSION := .exe
-COMPILER_FLAGS := -g -std=c++17
-INCLUDE_FLAGS :=  -IEditor\Source -IEngine/Source -IEngine/Vendor/ImGui -IEngine/Vendor/stb -IEngine/Vendor/YAML/include  -IEngine/Vendor/ImGuizmo 
+INCLUDE_FLAGS :=  -IEditor\Source -IEngine/Source $(VENDOR_INCLUDE)
 LINKER_FLAGS := -g -lEngine -L$(BUILD_DIR) -lImGui -lglad -lglfw3 -lcomdlg32 -lShlwapi -lYAML -lImGuizmo
-DEFINES := -D_DEBUG -DCE_WITH_EDITOR -DCE_WIN32
 
 # Recursive wildcard function to get all .cpp files
 rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)) $(wildcard $1$2)

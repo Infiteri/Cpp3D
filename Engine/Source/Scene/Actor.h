@@ -4,6 +4,7 @@
 #include "Core/UUID.h"
 #include "Math/Transform.h"
 #include "Scene/Components/Components.h"
+#include "Scene/Serialzier/ActorSerializer.h"
 #include <string>
 #include <vector>
 
@@ -39,6 +40,7 @@ namespace Core
         void _CalculateTransformMatrices();
 
         friend class SceneSerializer;
+        friend class ActorSerializer;
         friend class EditorLayer;
 
     public:

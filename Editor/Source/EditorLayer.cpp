@@ -18,6 +18,7 @@
 #include "Resource/CubemapLoader.h"
 #include "Resource/MaterialLoader.h"
 #include "Scene/Scene.h"
+#include "Scene/Serialzier/ActorSerializer.h"
 #include "Scene/Serialzier/SceneSerializer.h"
 #include "Scene/World.h"
 
@@ -113,7 +114,7 @@ namespace Core
         if (event->GetType() == EventType::KeyboardButton)
         {
             EventKeyboardButton *kb = (EventKeyboardButton *)event->GetData();
-            if (kb->Type == EventKeyboardButton::Press)
+            if (kb->EventType == EventKeyboardButton::Press)
                 state.Keybind.OnKeyDown(kb->Key);
         }
     }

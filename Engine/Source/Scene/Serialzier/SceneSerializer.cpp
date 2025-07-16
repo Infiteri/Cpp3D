@@ -6,6 +6,7 @@
 #include "Renderer/Object/Sky.h"
 #include "Scene/Actor.h"
 #include "Scene/SceneEnvironment.h"
+#include "Scene/Serialzier/ActorSerializer.h"
 #include "Scene/Serialzier/ComponentSerializer.h"
 #include "yaml-cpp/emittermanip.h"
 #include "yaml-cpp/node/node.h"
@@ -115,7 +116,9 @@ namespace Core
         // serialize Actors
         ActorList actors = scene->GetActors();
         for (auto actor : actors)
+        {
             _SerializeActor(actor, emitter);
+        }
 
         emitter << YAML::EndMap;
 
@@ -124,46 +127,12 @@ namespace Core
 
     void SceneSerializer::_SerializeActor(Actor *a, YAML::Emitter &out)
     {
-        out << YAML::BeginMap;
-        CE_SERIALIZE_FIELD("Actor", a->GetName().c_str());
-
-        // General information
-        CE_SERIALIZE_FIELD("Name", a->GetName().c_str());
-        CE_SERIALIZE_FIELD("UUID", a->GetID().Get());
-        CE_SERIALIZE_FIELD("Parent",
-                           (a->GetParent() != nullptr ? a->GetParent()->GetID().Get() : 0));
-
-        // todo: Format?
-        // [POSX POSY POSZ ROTX ROTY ROTZ SCAX SCAY SCAZ]
-        // -- OR --
-        // Position: [X Y Z], Rotation [X Y Z], Scale: [X Y Z]
+        // note: Parented actors get handled in ActorSerializer
+        if (a->GetParent() == nullptr)
         {
-            auto t = a->GetTransform();
-            out << YAML::Key << "Transform";
-
-#if 1
-            out << YAML::Value << YAML::Flow;
-            out << YAML::BeginSeq << t.Position.x << t.Position.y << t.Position.z;
-            out << t.Rotation.x << t.Rotation.y << t.Rotation.z;
-            out << t.Scale.x << t.Scale.y << t.Scale.z << YAML::EndSeq;
-#else
-            out << YAML::Value << YAML::BeginMap;
-            SerializerUtils::SerializeVector3(t.Position, "Position", out);
-            SerializerUtils::SerializeVector3(t.Rotation, "Rotation", out);
-            SerializerUtils::SerializeVector3(t.Scale, "Scale", out);
-            out << YAML::Value << YAML::EndMap;
-#endif
+            ActorSerializer ser(a);
+            ser.Serialize(out);
         }
-
-        // Serialize components
-        ComponentSerializer componentSerializer(a);
-        componentSerializer.Serialize(out);
-
-        out << YAML::EndMap;
-
-        // Serialize children
-        for (auto child : a->GetChildren())
-            _SerializeActor(child, out);
     }
 
     void SceneSerializer::Deserialize(const std::string &filepath)
@@ -196,44 +165,9 @@ namespace Core
             for (auto actor : actors)
             {
                 Actor *a = new Actor();
-                a->SetName(actor["Name"].as<std::string>());
-                a->id = actor["UUID"].as<u64>();
-
-                // note: Transform if the format is different change here as well
-                {
-                    auto t = actor["Transform"];
-                    a->GetTransform().Position = {t[0].as<float>(), t[1].as<float>(),
-                                                  t[2].as<float>()};
-
-                    a->GetTransform().Rotation = {t[3].as<float>(), t[4].as<float>(),
-                                                  t[5].as<float>()};
-
-                    a->GetTransform().Scale = {t[6].as<float>(), t[7].as<float>(),
-                                               t[8].as<float>()};
-                }
-
-                ComponentSerializer componentSerializer(a);
-                componentSerializer.Deserialize(actor);
-
-                // todo: On Parents and stuff
-                auto parent = (actor["Parent"] ? actor["Parent"].as<u64>() : 0);
-                if (parent != 0)
-                {
-                    Actor *target = scene->GetActorInAllHierarchy(parent);
-                    if (target)
-                        target->AddChild(a);
-                    else
-                    {
-                        CE_LOG("CE_SCENE", Error,
-                               "Unable find actor target %u, adding to scene instead of parent",
-                               parent);
-                        scene->AddActor(a);
-                    }
-                }
-                else
-                {
-                    scene->AddActor(a);
-                }
+                ActorSerializer ser(a);
+                ser.Deserialize(actor);
+                scene->AddActor(a);
             }
         }
         else

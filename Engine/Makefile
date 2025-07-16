@@ -1,12 +1,7 @@
-DIR := $(CURDIR)
-BUILD_DIR := Bin
-OBJ_DIR := Bin-Obj
-
 ASSEMBLY := Engine
 EXTENSION := .dll
-COMPILER_FLAGS := -g -fno-lto -std=c++2a
-INCLUDE_FLAGS := -IEngine/Source -IEngine/Vendor/GLFW/include -IEngine/Vendor/glad/include -IEngine/Vendor/ImGui -IEngine/Vendor/stb -IEngine/Vendor/YAML/include -IEngine/Vendor/ImGuizmo
-DEFINES := -D_DEBUG -DCE_BUILD_DLL -DCE_WITH_EDITOR -DCE_WIN32 
+INCLUDE_FLAGS := -IEngine/Source $(VENDOR_INCLUDE)
+DEFINES += -DCE_BUILD_DLL
 FLAGS := -g -shared  -fno-lto -L$(BUILD_DIR) -lglfw3 -lglad -lImGui -lcomdlg32 -lShlwapi -lYAML -lImGuizmo
 LINKER_FLAGS := $(FLAGS)
 
