@@ -610,8 +610,6 @@ namespace Core
         if (state.CurrentSceneState == SceneState::Start)
             return;
 
-        state.CurrentSceneState = SceneState::Start;
-
         // note: 1. Copy active scene to editor scene
         // 2. Stop active scene
         // 3. Set new active scene
@@ -620,6 +618,8 @@ namespace Core
         World::StopActive();
         state.EditorScene = Scene::From(World::GetActive());
         World::StartActive();
+
+        state.CurrentSceneState = SceneState::Start;
     }
 
     void EditorLayer::SceneStopRuntime()
@@ -628,8 +628,6 @@ namespace Core
 
         if (state.CurrentSceneState == SceneState::Stop)
             return;
-
-        state.CurrentSceneState = SceneState::Stop;
 
         if (!state.EditorScene)
             return;
@@ -647,6 +645,8 @@ namespace Core
 
         if (id.Get() != 0)
             panel->SelectActor(World::GetActive()->GetActorInAllHierarchy(id));
+
+        state.CurrentSceneState = SceneState::Stop;
     }
 
     EditorLayer::SceneState EditorLayer::GetSceneState() { return state.CurrentSceneState; }

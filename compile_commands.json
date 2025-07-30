@@ -1,7 +1,7 @@
 [
   {
     "directory": "D:/Ion/Code/NVIMCORE",
-    "command": "clang++ -std=c++20 -Wall -IEditor/Source -IEngine/Source -IEngine/Vendor/GLFW/include -IEngine/Vendor/glad/include -IEngine/Vendor/ImGui -IEngine/Vendor/stb -IC:/msys64/ucrt64/include/c++/14.2.0 -IEngine/Vendor/YAML/include -DCE_WIN32 -DCE_WITH_EDITOR -IEngine/Vendor/ImGuizmo", 
+    "command": "clang++ -std=c++20 -Wall -IEditor/Source -IEngine/Source -IEngine/Vendor/GLFW/include -IEngine/Vendor/glad/include -IEngine/Vendor/ImGui -IEngine/Vendor/stb -IC:/msys64/ucrt64/include/c++/14.2.0 -IEngine/Vendor/YAML/include -DCE_WIN32 -DCE_WITH_EDITOR -IEngine/Vendor/ImGuizmo -IEngine/Vendor/bullet/src", 
     "file": "main.cpp"
   }
 ]

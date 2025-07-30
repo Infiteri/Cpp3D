@@ -30,6 +30,8 @@ namespace Core
 
         std::string name;
 
+        void _RegisterActorRuntimeComponents(Actor *a);
+
     public:
         Scene();
         ~Scene();

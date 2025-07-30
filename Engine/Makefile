@@ -2,7 +2,7 @@ ASSEMBLY := Engine
 EXTENSION := .dll
 INCLUDE_FLAGS := -IEngine/Source $(VENDOR_INCLUDE)
 DEFINES += -DCE_BUILD_DLL
-FLAGS := -g -shared  -fno-lto -L$(BUILD_DIR) -lglfw3 -lglad -lImGui -lcomdlg32 -lShlwapi -lYAML -lImGuizmo
+FLAGS := -g -shared  -fno-lto -L$(BUILD_DIR) -lglfw3 -lglad -lImGui -lcomdlg32 -lShlwapi -lYAML -lImGuizmo -lBullet
 LINKER_FLAGS := $(FLAGS)
 
 #Recursive wildcard function to get all .cpp files
@@ -39,8 +39,7 @@ manual_link:
 	@ld -o $(BUILD_DIR)/$(ASSEMBLY)$(EXTENSION) -LD:/SYS/msys64/ucrt64/lib -LD:\SYS\msys64\ucrt64\lib\gcc\x86_64-w64-mingw32\14.2.0 -lgcc -LD:/SYS/msys65/ucrt64/x86_64-w64-mingw32/lib -LD:/SYS/msys64/ucrt64/lib/gcc/x86_64-w64-mingw32/13.2.0 -L$(BUILD_DIR) $(OBJ_FILES) -lstdc++ -lkernel32 -luser32 -lgdi32 -lopengl32 -lEngine -lImGui -lglad -lglfw3 -lucrt -lkernel32 -luser32 -lgdi32 -ladvapi32 -lole32 -loleaut32 -lshell32 -luuid -lcomdlg32 -lws2_32 -lYAML -lImGuizmo  
 
 
-
 $(OBJ_DIR)/%.o: %.cpp
 	@echo Compiling $<...
 	@mkdir -p $(dir $@)
-	@g++ $< $(COMPILER_FLAGS) -c -o $@ $(DEFINES) $(INCLUDE_FLAGS) -g -shared -L$(BUILD_DIR)
+	@g++ $< $(COMPILER_FLAGS) -c -o $@ $(DEFINES) $(INCLUDE_FLAGS)  -L$(BUILD_DIR)

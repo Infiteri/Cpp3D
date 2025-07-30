@@ -2,10 +2,15 @@
 
 #include "Base.h"
 
+#include "Physics/Body/Config.h"
+#include "Physics/Body/RigidBody.h"
+#include "Physics/Body/StaticBody.h"
+#include "Physics/Collider/Collider.h"
 #include "Renderer/Camera/PerspectiveCamera.h"
 #include "Renderer/Light/PointLight.h"
 #include "Renderer/Light/SpotLight.h"
 #include "Renderer/Object/Mesh.h"
+#include <memory>
 #include <string>
 
 namespace Core
@@ -92,5 +97,47 @@ namespace Core
         void Start();
 
         void From(ScriptComponent *other);
+    };
+
+    class CE_API RigidBodyComponent : public Component
+    {
+    private:
+        RigidBody *body;
+
+        friend class Scene;
+
+    public:
+        RigidBodyConfig Config;
+
+        RigidBodyComponent();
+
+        void From(RigidBodyComponent *other);
+
+        inline RigidBody *GetBody() { return body; };
+    };
+
+    class CE_API StaticBodyComponent : public Component
+    {
+    private:
+        StaticBody *body;
+
+        friend class Scene;
+
+    public:
+        StaticBodyConfig Config;
+
+        StaticBodyComponent();
+
+        void From(StaticBodyComponent *other);
+
+        inline StaticBody *GetBody() { return body; };
+    };
+
+    class CE_API ColliderComponent : public Component
+    {
+    public:
+        ColliderConfig Config;
+
+        void From(ColliderComponent *other);
     };
 } // namespace Core

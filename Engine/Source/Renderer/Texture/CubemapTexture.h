@@ -6,7 +6,7 @@
 
 namespace Core
 {
-    struct CubemapConfiguration
+    struct CE_API CubemapConfiguration
     {
         std::string Left;
         std::string Right;
@@ -14,6 +14,11 @@ namespace Core
         std::string Bottom;
         std::string Front;
         std::string Back;
+
+        CubemapConfiguration();
+        CubemapConfiguration(const CubemapConfiguration &other);
+        CubemapConfiguration(CubemapConfiguration &other);
+        ~CubemapConfiguration();
     };
 
     class CubemapTexture : public Texture

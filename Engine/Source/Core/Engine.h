@@ -20,6 +20,9 @@ namespace Core
         {
             std::unique_ptr<Window> Window;
             ProjectState ProjState;
+
+            float DeltaTime;
+            float LastTime;
         };
 
     public:
@@ -31,6 +34,8 @@ namespace Core
 
         static void PreInit();
         static void Init();
+
+        static float GetDeltaTime();
 
         static bool ShouldRun();
         static void Render();

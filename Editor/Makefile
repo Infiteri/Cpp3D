@@ -1,6 +1,6 @@
 ASSEMBLY := Editor
 EXTENSION := .exe
-INCLUDE_FLAGS :=  -IEditor\Source -IEngine/Source $(VENDOR_INCLUDE)
+INCLUDE_FLAGS :=  -IEditor\Source -IEngine\Source $(VENDOR_INCLUDE)
 LINKER_FLAGS := -g -lEngine -L$(BUILD_DIR) -lImGui -lglad -lglfw3 -lcomdlg32 -lShlwapi -lYAML -lImGuizmo
 
 # Recursive wildcard function to get all .cpp files

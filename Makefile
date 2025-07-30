@@ -1,27 +1,56 @@
 export BUILD_DIR := Bin
 export OBJ_DIR := Bin-Obj
 export DEFINES := -D_DEBUG -DCE_WITH_EDITOR -DCE_WIN32
-export VENDOR_INCLUDE := -IEngine/Vendor/GLFW/include -IEngine/Vendor/glad/include -IEngine/Vendor/ImGui -IEngine/Vendor/stb -IEngine/Vendor/YAML/include -IEngine/Vendor/ImGuizmo
+export VENDOR_INCLUDE := -IEngine/Vendor/GLFW/include -IEngine/Vendor/glad/include -IEngine/Vendor/ImGui -IEngine/Vendor/stb -IEngine/Vendor/YAML/include -IEngine/Vendor/ImGuizmo -IEngine/Vendor/bullet/src
 export COMPILER_FLAGS := -g -std=c++17
 
-# todo: Better commands ? Like PascalCase 
-.PHONY: all engine editor vendor-copy clean-obj
+.PHONY: Scratch Full All Engine Editor VendorCopy VendorBuild AssetsCopy ProjectCopy Scaffold CleanObj CleanAll EditorManualLink
 
-all: engine editor
+All: Engine Editor
 
-engine:
+Scratch: Scaffold VendorBuild Full
+
+Full: Scaffold VendorCopy AssetsCopy ProjectCopy Engine Editor
+
+EditorManualLink:
+	@$(MAKE) -f Editor/Makefile manual_link
+
+Engine:
 	@$(MAKE) -f Engine/Makefile all
 
-editor:
+Editor:
 	@$(MAKE) -f Editor/Makefile all
 
-
-clean-obj:
+CleanAll:
+	rm -rf $(BUILD_DIR)
 	rm -rf $(OBJ_DIR)
 
-vendor-copy:
+CleanObj:
+	rm -rf $(OBJ_DIR)
+
+VendorCopy:
 	cp "Engine\Vendor\GLFW\lib\glfw3.dll" "Bin\glfw3.dll"
 	cp "Engine\Vendor\ImGui\ImGui.dll" "Bin\ImGui.dll"
 	cp "Engine\Vendor\ImGuizmo\ImGuizmo.dll" "Bin\ImGuizmo.dll"
 	cp "Engine\Vendor\YAML\YAML.dll" "Bin\YAML.dll"
 	cp "Engine\Vendor\glad\lib\glad.dll" "Bin\glad.dll"
+	cp "Engine\Vendor\bullet\Bullet.dll" "Bin\Bullet.dll"
+
+VendorBuild:
+	cp "Engine\Vendor\GLFW\lib\glfw3.dll" "Bin\glfw3.dll"
+	$(MAKE) -f Engine\Vendor\ImGui\Makefile All
+	$(MAKE) -f Engine\Vendor\ImGuizmo\Makefile All
+	$(MAKE) -f Engine\Vendor\YAML\Makefile All
+	$(MAKE) -f Engine\Vendor\glad\Makefile All
+	$(MAKE) -f Engine\Vendor\bullet\Makefile All
+
+AssetsCopy:
+	cp -r "Engine\Assets" "Bin\EngineAssets"
+	cp -r "UsedAssets" "Bin\Assets"
+
+ProjectCopy:
+	cp "Engine\Assets\Proj.ce_proj" "Bin\Proj.ce_proj"
+
+Scaffold:
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(OBJ_DIR)

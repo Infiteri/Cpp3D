@@ -1,6 +1,7 @@
 #include "Scene.h"
 #include "Base.h"
 #include "Core/Logger.h"
+#include "Physics/PhysicsEngine.h"
 #include "Renderer/Camera/CameraSystem.h"
 #include "Renderer/Renderer.h"
 #include "Scene/Components/Components.h"
@@ -14,9 +15,47 @@ namespace Core
     Scene::~Scene()
     {
         for (auto actor : actors)
-            delete actor;
+            if (actor)
+                delete actor;
+
+        Renderer::SetDirectioanlLightInstance(nullptr);
+        Renderer::SetSkyInstance(nullptr);
 
         actors.clear();
+    }
+
+    void Scene::_RegisterActorRuntimeComponents(Actor *ac)
+    {
+        CE_VERIFY(ac);
+
+        for (auto script : ac->GetComponents<ScriptComponent>())
+        {
+            ScriptEngine::RegisterScript(script->ClassName, ac);
+        }
+
+        for (auto rigid : ac->GetComponents<RigidBodyComponent>())
+        {
+            rigid->Config.Owner = ac;
+            auto collider = ac->GetComponent<ColliderComponent>();
+            if (!collider)
+                rigid->Config.ColliderConfig = {};
+            else
+                rigid->Config.ColliderConfig = collider->Config;
+
+            rigid->body = PhysicsEngine::CreateRigidBody(rigid->Config);
+        }
+
+        for (auto rigid : ac->GetComponents<StaticBodyComponent>())
+        {
+            rigid->Config.Owner = ac;
+            auto collider = ac->GetComponent<ColliderComponent>();
+            if (!collider)
+                rigid->Config.ColliderConfig = {};
+            else
+                rigid->Config.ColliderConfig = collider->Config;
+
+            rigid->body = PhysicsEngine::CreateStaticBody(rigid->Config);
+        }
     }
 
     Scene *Scene::From(Scene *scene)
@@ -51,15 +90,13 @@ namespace Core
         {
             ac->Start();
 
-            for (auto script : ac->GetComponents<ScriptComponent>())
-            {
-                ScriptEngine::RegisterScript(script->ClassName, ac);
-            }
+            _RegisterActorRuntimeComponents(ac);
         }
 
         ActivateSceneCamera();
 
         ScriptEngine::OnRuntimeStart();
+        PhysicsEngine::StartRuntime();
     }
 
     void Scene::Update()
@@ -77,6 +114,8 @@ namespace Core
         }
 
         ScriptEngine::OnRuntimeUpdate();
+
+        PhysicsEngine::UpdateRuntime();
     }
 
     void Scene::Render()
@@ -106,13 +145,14 @@ namespace Core
 
         state = State::Stopped;
 
+        ScriptEngine::OnRuntimeStop();
+        ScriptEngine::ClearScriptSet();
+        PhysicsEngine::StopRuntime();
+
         for (auto ac : actors)
         {
             ac->Stop();
         }
-
-        ScriptEngine::OnRuntimeStop();
-        ScriptEngine::ClearScriptSet();
     }
 
     void Scene::ActivateSceneCamera()
@@ -152,7 +192,11 @@ namespace Core
     void Scene::AddActor(Actor *a)
     {
         if (state == State::Started || state == State::Running)
+        {
             a->Start();
+
+            _RegisterActorRuntimeComponents(a);
+        }
 
         actors.push_back(a);
     }

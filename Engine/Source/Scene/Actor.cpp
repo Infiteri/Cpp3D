@@ -34,6 +34,12 @@ namespace Core
         out->name = actor->name;
         out->transform = actor->transform;
 
+        // CE_DEBUG("OUT: %f %f %f", out->transform.Position.x, out->transform.Position.y,
+        //          out->transform.Position.z);
+        //
+        // CE_DEBUG("IN: %f %f %f", actor->transform.Position.x, actor->transform.Position.y,
+        //          actor->transform.Position.z);
+
         if (copyID)
             out->id = actor->id;
 
@@ -42,6 +48,9 @@ namespace Core
         CE_COPY_COMPONENT(SpotLightComponent);
         CE_COPY_COMPONENT(PerspectiveCameraComponent);
         CE_COPY_COMPONENT(ScriptComponent);
+        CE_COPY_COMPONENT(RigidBodyComponent);
+        CE_COPY_COMPONENT(StaticBodyComponent);
+        CE_COPY_COMPONENT(ColliderComponent);
 
         for (auto child : actor->children)
             out->AddChild(Actor::From(child));

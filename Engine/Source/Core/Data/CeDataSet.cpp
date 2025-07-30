@@ -12,6 +12,19 @@ namespace Core
         data.clear();
     }
 
+    void CeDataSet::Rename(const std::string &oldName, const std::string &newName)
+    {
+        if (!Exists(oldName))
+        {
+            return;
+        }
+
+        CeData *d = data[oldName];
+        data.erase(oldName);
+        data[newName] = d;
+        d->SetName(newName);
+    }
+
     void CeDataSet::Add(const std::string &name, CeDataType dt, void *dataPtr)
     {
         if (Exists(name))

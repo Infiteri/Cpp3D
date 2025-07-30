@@ -1,6 +1,7 @@
 #include "SceneSerializer.h"
 #include "Base.h"
 #include "Core/Logger.h"
+#include "Core/Serializer/CeDataSerializer.h"
 #include "Core/Serializer/CeSerializer.h"
 #include "Core/Serializer/CeSerializerUtils.h"
 #include "Renderer/Object/Sky.h"
@@ -42,6 +43,17 @@ namespace Core
             case SkyMode::Skybox:
                 CE_SERIALIZE_FIELD("LoadPath", sky->GetCubemapLoadPath().c_str());
                 break;
+
+            case SkyMode::Shader:
+            {
+                CE_SERIALIZE_FIELD("Name", sky->GetShaderName().c_str());
+
+                CE_SERIALIZE_FIELD("DataSet", YAML::BeginSeq);
+                CeDataSerializer ser(sky->GetShaderDataSet());
+                ser.Serialize(out);
+                out << YAML::EndSeq;
+            }
+            break;
 
             default:
                 CE_LOG("CE_SCENE", Warn, "Unknown sky type");
@@ -91,6 +103,16 @@ namespace Core
             {
                 std::string lp = skyNode["LoadPath"].as<std::string>();
                 env->Sky.SetSkyboxMode(lp);
+            }
+            break;
+
+            case SkyMode::Shader:
+            {
+                std::string name = skyNode["Name"].as<std::string>();
+                env->Sky.SetShaderMode(name);
+
+                CeDataSerializer ser(env->Sky.GetShaderDataSet());
+                ser.Deserialize(skyNode["DataSet"]);
             }
             break;
 

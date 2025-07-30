@@ -4,12 +4,12 @@
 #include "Script/ActorScript.h"
 #include <memory>
 
-#define CE_DEBUG_SCRIPT_SYS 1
+#define CE_DEBUG_SCRIPT_SYS 0
 
 #if CE_DEBUG_SCRIPT_SYS == 1
 #define CE_SCR_DBG(msg, ...) CE_LOG("CE_SCRIPT", Trace, msg, ##__VA_ARGS__)
 #else
-#define C_SCR_DBG(msg, ...)
+#define CE_SCR_DBG(msg, ...)
 #endif
 
 namespace Core

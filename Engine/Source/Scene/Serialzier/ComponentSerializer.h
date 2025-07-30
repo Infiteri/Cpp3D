@@ -9,6 +9,10 @@ namespace YAML
     class Node;
 }
 
+#define CE_SER_DESER_PAIR(type)                                                                    \
+    void _Serialize##type##Component(type##Component *mesh, int index, YAML::Emitter &out);        \
+    void _Deserialize##type##Component(YAML::Node node)
+
 namespace Core
 {
     class ComponentSerializer : public CeSerializer
@@ -26,27 +30,30 @@ namespace Core
             int PointLight = 0;
             int SpotLight = 0;
             int PerspectiveCamera = 0;
-            int Script;
+            int Script = 0;
+            int RigidBody = 0;
+            int StaticBody = 0;
+            int Collider = 0;
         };
         ComponentCount count;
 
         void _SerialzieComponentCount(YAML::Emitter &out);
 
-        void _SerializeMeshComponent(MeshComponent *mesh, int index, YAML::Emitter &out);
-        void _DeserializeMeshComponent(YAML::Node node);
+        CE_SER_DESER_PAIR(Mesh);
 
-        void _SerializePointLightComponent(PointLightComponent *c, int index, YAML::Emitter &out);
-        void _DeserializePointLightComponent(YAML::Node node);
+        CE_SER_DESER_PAIR(PointLight);
 
-        void _SerializeSpotLightComponent(SpotLightComponent *c, int index, YAML::Emitter &out);
-        void _DeserializeSpotLightComponent(YAML::Node node);
+        CE_SER_DESER_PAIR(SpotLight);
 
-        void _SerializePerspectiveCameraComponent(PerspectiveCameraComponent *c, int index,
-                                                  YAML::Emitter &out);
-        void _DeserializePerspectiveCameraComponent(YAML::Node node);
+        CE_SER_DESER_PAIR(PerspectiveCamera);
 
-        void _SerializeScriptComponent(ScriptComponent *c, int index, YAML::Emitter &out);
-        void _DeserializeScriptComponent(YAML::Node node);
+        CE_SER_DESER_PAIR(Script);
+
+        CE_SER_DESER_PAIR(RigidBody);
+
+        CE_SER_DESER_PAIR(StaticBody);
+
+        CE_SER_DESER_PAIR(Collider);
 
     public:
         ComponentSerializer(Actor *target);

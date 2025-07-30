@@ -7,6 +7,39 @@
 namespace Core
 {
 
+    CubemapConfiguration::CubemapConfiguration()
+    {
+        Left = "";
+        Right = "";
+        Top = "";
+        Bottom = "";
+        Front = "";
+        Back = "";
+    }
+
+    CubemapConfiguration::CubemapConfiguration(const CubemapConfiguration &other)
+    {
+        Left = other.Left;
+        Right = other.Right;
+        Top = other.Top;
+        Bottom = other.Bottom;
+        Front = other.Front;
+        Back = other.Back;
+    }
+
+    CubemapConfiguration::CubemapConfiguration(CubemapConfiguration &other)
+    {
+
+        Left = other.Left;
+        Right = other.Right;
+        Top = other.Top;
+        Bottom = other.Bottom;
+        Front = other.Front;
+        Back = other.Back;
+    }
+
+    CubemapConfiguration::~CubemapConfiguration() {}
+
     void CubemapTexture::_EnsureDestructionID()
     {
         if (id != 0)

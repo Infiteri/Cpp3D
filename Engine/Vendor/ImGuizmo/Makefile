@@ -1,19 +1,12 @@
-CXXFLAGS=-std=c++11
-CPPFLAGS=-I. -Iexample
+VP=Engine/Vendor
+BUILD_DIR?=Bin
 
-LIB_OBJS = ImGuizmo.o GraphEditor.o ImCurveEdit.o ImGradient.o ImSequencer.o
-EXAMPLE_OBJS = example/imgui.o example/imgui_draw.o example/imgui_tables.o example/imgui_widgets.o example/main.o
+rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2)) $(wildcard $1$2)
 
-EXAMPLE_NAME = example.exe
-LDFLAGS=-mwindows -static-libgcc -static-libstdc++
-LIBS=-limm32 -lopengl32 -lgdi32
+SRC_FILES := $(call rwildcard,$(VP)/ImGuizmo/,*.cpp)
 
-$(EXAMPLE_NAME): $(LIB_OBJS) $(EXAMPLE_OBJS)
-	$(CXX) $(LDFLAGS) -o $@ $^ $(LIBS)
+.PHONY: All
 
-example/main.o: CXXFLAGS := -std=c++17
-
-clean:
-	$(RM) $(LIB_OBJS)
-	$(RM) $(EXAMPLE_OBJS)
-	$(RM) $(EXAMPLE_NAME)
+All:
+	g++ -g -shared -I$(VP)/ImGui -I$(VP)/ImGuizmo -L$(BUILD_DIR) -lImGui $(SRC_FILES) -o $(VP)/ImGuizmo/ImGuizmo.dll
+	cp $(VP)/ImGuizmo/ImGuizmo.dll $(BUILD_DIR)/ImGuizmo.dll

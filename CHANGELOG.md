@@ -106,3 +106,20 @@
 
 1. Added Project and all details
 2. Fixed bugs
+
+# 0.1.4 - 16.07.2025
+
+1. Updated build system
+2. Added ActorSerializer and all details
+3. Changed how actor children are serialized
+
+
+# 0.1.5 - 30.07.2025
+
+1. Added Bullet physics
+2. Added physics engine and all related
+3. Added Rigid Body component and all the complexities that come with that
+4. Added CeDataSerialzier and complexities 
+5. Shader sky's are now more complete
+6. Better build system rules
+7. Other

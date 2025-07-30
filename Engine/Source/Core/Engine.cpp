@@ -6,12 +6,15 @@
 #include "Core/Logger.h"
 #include "Core/Window/Window.h"
 #include "Layer/ImGuiLayer.h"
+#include "Physics/PhysicsEngine.h"
 #include "Platform/Library.h"
 #include "Project/ProjectSystem.h"
 #include "Renderer/Renderer.h"
 #include "Scene/World.h"
 #include "Script/ScriptEngine.h"
 #include "imgui.h"
+
+#include "btBulletDynamicsCommon.h"
 
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
@@ -37,6 +40,7 @@ namespace Core
         Renderer::Init();
         ScriptEngine::Init();
         ProjectSystem::Init();
+        PhysicsEngine::Init();
 
         World::Init();
     }
@@ -93,6 +97,10 @@ namespace Core
         // note: Not wanted right now
         // todo:       World::UpdateActive();
         state.Window->Update();
+
+        float currentFrameTime = (float)glfwGetTime();
+        state.DeltaTime = currentFrameTime - state.LastTime;
+        state.LastTime = currentFrameTime;
     }
 
     void Engine::Shutdown()
@@ -102,6 +110,7 @@ namespace Core
         EventSystem::Shutdown();
         ScriptEngine::Shutdown();
         ProjectSystem::Shutdown();
+        PhysicsEngine::Shutdown();
 
         World::Shutdown();
     }
@@ -109,4 +118,6 @@ namespace Core
     Window *Engine::GetWindow() { return state.Window.get(); }
 
     Engine::ProjectState Engine::GetProjectState() { return state.ProjState; }
+
+    float Engine::GetDeltaTime() { return state.DeltaTime; }
 } // namespace Core

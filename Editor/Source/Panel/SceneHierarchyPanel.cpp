@@ -5,6 +5,7 @@
 #include "Core/Util/StringUtils.h"
 #include "EditorLayer.h"
 #include "EditorUtils.h"
+#include "Physics/Collider/Collider.h"
 #include "Platform/Platform.h"
 #include "Renderer/Geometry/Geometry.h"
 #include "Renderer/Material/Material.h"
@@ -197,6 +198,9 @@ namespace Core
     void RenderSpotLightUI(SpotLightComponent *c, Actor *a);
     void RenderPerspectiveCameraUI(PerspectiveCameraComponent *c, Actor *a);
     void ScriptComponentUI(ScriptComponent *c, Actor *a);
+    void RigidBodyComponentUI(RigidBodyComponent *c, Actor *a);
+    void StaticBodyComponentUI(StaticBodyComponent *c, Actor *a);
+    void ColliderComponentUI(ColliderComponent *c, Actor *a);
 
     void SceneHierarchyPanel::RenderActorComponents(Actor *a)
     {
@@ -218,6 +222,9 @@ namespace Core
         CE_RENDER_COMP("Perspective Camera Component", PerspectiveCameraComponent,
                        RenderPerspectiveCameraUI);
         CE_RENDER_COMP("Script Component", ScriptComponent, ScriptComponentUI);
+        CE_RENDER_COMP("Rigid Body Component", RigidBodyComponent, RigidBodyComponentUI);
+        CE_RENDER_COMP("Static Body Component", StaticBodyComponent, StaticBodyComponentUI);
+        CE_RENDER_COMP("Collider Component", ColliderComponent, ColliderComponentUI);
 
         ImGui::NewLine();
 
@@ -231,6 +238,9 @@ namespace Core
             CE_ADD_COMP_RENDER("Spot Light Component", SpotLightComponent);
             CE_ADD_COMP_RENDER("Perspective Camera Component", PerspectiveCameraComponent);
             CE_ADD_COMP_RENDER("Script Component", ScriptComponent);
+            CE_ADD_COMP_RENDER("Rigid Body Component", RigidBodyComponent);
+            CE_ADD_COMP_RENDER("Static Body Component", StaticBodyComponent);
+            CE_ADD_COMP_RENDER("Collider Component", ColliderComponent);
 
             ImGui::EndPopup();
         }
@@ -523,5 +533,66 @@ namespace Core
     void ScriptComponentUI(ScriptComponent *c, Actor *a)
     {
         EditorUtils::ImGuiString("Class Name", c->ClassName);
+    }
+
+    void RigidBodyComponentUI(RigidBodyComponent *c, Actor *a)
+    {
+        ImGui::DragFloat("Mass", &c->Config.Mass, 0.05f, 0.001f);
+        ImGui::DragFloat("Linear Damping", &c->Config.LinearDamping, 0.05f, 0.001f);
+        ImGui::DragFloat("Angular Damping", &c->Config.AngularDamping, 0.05f, 0.001f);
+        ImGui::DragFloat("Restitution", &c->Config.Restitution, 0.05f, 0.001f);
+        ImGui::DragFloat("Friction", &c->Config.Friction, 0.05f, 0.001f);
+    }
+
+    void StaticBodyComponentUI(StaticBodyComponent *c, Actor *a)
+    {
+        ImGui::DragFloat("Linear Damping", &c->Config.LinearDamping, 0.05f, 0.001f);
+        ImGui::DragFloat("Angular Damping", &c->Config.AngularDamping, 0.05f, 0.001f);
+        ImGui::DragFloat("Restitution", &c->Config.Restitution, 0.05f, 0.001f);
+        ImGui::DragFloat("Friction", &c->Config.Friction, 0.05f, 0.001f);
+    }
+
+    void ColliderComponentUI(ColliderComponent *c, Actor *a)
+    {
+        {
+            const int ammount = 2;
+            const char *selections[] = {"None", "Box"};
+            const char *current = selections[(int)c->Config.Type];
+
+            if (ImGui::BeginCombo("Type", current))
+            {
+                for (int i = 0; i < ammount; i++)
+                {
+                    bool isSelected = (current == selections[i]);
+
+                    if (ImGui::Selectable(selections[i], isSelected))
+                    {
+                        current = selections[i];
+                        c->Config.Type = (ColliderType)i;
+                    }
+
+                    if (isSelected)
+                        ImGui::SetItemDefaultFocus();
+                }
+
+                ImGui::EndCombo();
+            }
+        }
+
+        switch (c->Config.Type)
+        {
+        default:
+            ImGui::Text("Unknown type");
+            break;
+
+        case ColliderType::None:
+            break;
+
+        case ColliderType::Box:
+            ImGui::DragFloat("Width", &c->Config.BoxType.Width, 0.01f, 0.01f);
+            ImGui::DragFloat("Height", &c->Config.BoxType.Height, 0.01f, 0.01f);
+            ImGui::DragFloat("Depth", &c->Config.BoxType.Depth, 0.01f, 0.01f);
+            break;
+        }
     }
 } // namespace Core

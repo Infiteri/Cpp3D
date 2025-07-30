@@ -1,0 +1,5 @@
+Project:
+  Name: Project
+  AssetPath: Assets
+  StartScene: CM2.ce_scene
+  LibraryPath: Lib.dll

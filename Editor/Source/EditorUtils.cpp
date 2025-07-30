@@ -1,5 +1,6 @@
 #include "EditorUtils.h"
 #include "Core/Data/CeData.h"
+#include "Core/Logger.h"
 #include "Core/Util/StringUtils.h"
 #include "EditorTextureSystem.h"
 #include "imgui.h"
@@ -135,10 +136,9 @@ namespace Core
 
         void ImGuiCeDataSet(CeDataSet *set)
         {
-
             if (ImGui::Button("Add"))
             {
-                set->Add("Data");
+                set->Add("Data " + std::to_string(set->GetDataSet().size()));
                 return;
             }
             int i = 0;
@@ -152,13 +152,15 @@ namespace Core
                     {
                         std::string n = data->GetName();
                         if (ImGuiString("Name", n))
-                            data->SetName(n);
+                        {
+                            set->Rename(name, n);
+                        }
                     }
 
-                    const int maxSelections = 5;
-                    const char *selections[maxSelections] = {"Vec2", "Vec3", "Vec4", "Color",
-                                                             "Float"};
-                    const char *current = selections[(int)data->GetType() - 1];
+                    const int maxSelections = 6;
+                    const char *selections[maxSelections] = {"None", "Vec2",  "Vec3",
+                                                             "Vec4", "Color", "Float"};
+                    const char *current = selections[(int)data->GetType()];
 
                     {
                         if (ImGui::BeginCombo("Data Type", current))
@@ -171,7 +173,7 @@ namespace Core
                                 {
                                     current = selections[i];
                                     data->_DestroyOnType();
-                                    data->SetType((CeDataType)(i + 1));
+                                    data->SetType((CeDataType)(i));
                                     data->_SetupDefaultOnType();
                                 }
 
@@ -205,16 +207,24 @@ namespace Core
                     break;
                     case CeDataType::Color:
                     {
+                        auto v = data->As<Color>();
+                        ImGuiColor("Data", *v);
                     }
                     break;
                     case CeDataType::Float:
                     {
+                        auto v = data->As<float>();
+                        ImGui::DragFloat("Data", v, 0.01f);
                     }
                     break;
                     }
 
+                    if (ImGui::Button("Remove"))
+                        set->Remove(name);
+
                     ImGui::TreePop();
                 }
+
                 i++;
             }
         }

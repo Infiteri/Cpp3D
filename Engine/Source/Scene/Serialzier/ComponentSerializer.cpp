@@ -3,6 +3,7 @@
 #include "Core/Logger.h"
 #include "Core/Serializer/CeSerializer.h"
 #include "Core/Serializer/CeSerializerUtils.h"
+#include "Physics/Collider/Collider.h"
 #include "Renderer/Geometry/Geometry.h"
 #include "Renderer/Material/Material.h"
 #include "Resource/MaterialLoader.h"
@@ -52,6 +53,9 @@ namespace Core
         CE_SERIALIZE_COMPONENT_CALLBACK(SpotLight);
         CE_SERIALIZE_COMPONENT_CALLBACK(PerspectiveCamera);
         CE_SERIALIZE_COMPONENT_CALLBACK(Script);
+        CE_SERIALIZE_COMPONENT_CALLBACK(RigidBody);
+        CE_SERIALIZE_COMPONENT_CALLBACK(StaticBody);
+        CE_SERIALIZE_COMPONENT_CALLBACK(Collider);
     }
 
     void ComponentSerializer::_SerialzieComponentCount(YAML::Emitter &out)
@@ -61,12 +65,18 @@ namespace Core
         CE_GET_COMPONENT_COUNT(SpotLight);
         CE_GET_COMPONENT_COUNT(PerspectiveCamera);
         CE_GET_COMPONENT_COUNT(Script);
+        CE_GET_COMPONENT_COUNT(RigidBody);
+        CE_GET_COMPONENT_COUNT(StaticBody);
+        CE_GET_COMPONENT_COUNT(Collider);
 
         CE_SERIALIZE_FIELD("MeshComponentCount", count.Mesh);
         CE_SERIALIZE_FIELD("PointLightComponentCount", count.PointLight);
         CE_SERIALIZE_FIELD("SpotLightComponentCount", count.SpotLight);
         CE_SERIALIZE_FIELD("PerspectiveCameraComponentCount", count.PerspectiveCamera);
         CE_SERIALIZE_FIELD("ScriptComponentCount", count.Script);
+        CE_SERIALIZE_FIELD("RigidBodyComponentCount", count.RigidBody);
+        CE_SERIALIZE_FIELD("StaticBodyComponentCount", count.StaticBody);
+        CE_SERIALIZE_FIELD("ColliderComponentCount", count.Collider);
     }
 
     void ComponentSerializer::_SerializeMeshComponent(MeshComponent *mesh, int index,
@@ -199,6 +209,9 @@ namespace Core
                                  _DeserializePerspectiveCameraComponent);
 
         CE_DESERIALIZE_COMPONENT("ScriptComponent", _DeserializeScriptComponent);
+        CE_DESERIALIZE_COMPONENT("RigidBodyComponent", _DeserializeRigidBodyComponent);
+        CE_DESERIALIZE_COMPONENT("StaticBodyComponent", _DeserializeStaticBodyComponent);
+        CE_DESERIALIZE_COMPONENT("ColliderComponent", _DeserializeColliderComponent);
     }
 
     void ComponentSerializer::_DeserializeMeshComponent(YAML::Node node)
@@ -300,4 +313,103 @@ namespace Core
         auto c = actor->AddComponent<ScriptComponent>();
         c->ClassName = node["ClassName"].as<std::string>();
     }
+
+    void ComponentSerializer::_SerializeRigidBodyComponent(RigidBodyComponent *c, int index,
+                                                           YAML::Emitter &out)
+    {
+        out << YAML::Key << "RigidBodyComponent " + std::to_string(index);
+        out << YAML::BeginMap;
+
+        CE_SERIALIZE_FIELD("Mass", c->Config.Mass);
+        CE_SERIALIZE_FIELD("AngularDamping", c->Config.AngularDamping);
+        CE_SERIALIZE_FIELD("LinearDamping", c->Config.LinearDamping);
+        CE_SERIALIZE_FIELD("Friction", c->Config.Friction);
+        CE_SERIALIZE_FIELD("Restitution", c->Config.Restitution);
+
+        out << YAML::EndMap;
+    }
+
+    void ComponentSerializer::_DeserializeRigidBodyComponent(YAML::Node node)
+    {
+        auto c = actor->AddComponent<RigidBodyComponent>();
+
+        c->Config.Mass = node["Mass"].as<float>();
+        c->Config.AngularDamping = node["AngularDamping"].as<float>();
+        c->Config.LinearDamping = node["LinearDamping"].as<float>();
+        c->Config.Friction = node["Friction"].as<float>();
+        c->Config.Restitution = node["Restitution"].as<float>();
+    }
+
+    void ComponentSerializer::_SerializeStaticBodyComponent(StaticBodyComponent *c, int index,
+                                                            YAML::Emitter &out)
+    {
+        out << YAML::Key << "StaticBodyComponent " + std::to_string(index);
+        out << YAML::BeginMap;
+
+        CE_SERIALIZE_FIELD("AngularDamping", c->Config.AngularDamping);
+        CE_SERIALIZE_FIELD("LinearDamping", c->Config.LinearDamping);
+        CE_SERIALIZE_FIELD("Friction", c->Config.Friction);
+        CE_SERIALIZE_FIELD("Restitution", c->Config.Restitution);
+
+        out << YAML::EndMap;
+    }
+
+    void ComponentSerializer::_DeserializeStaticBodyComponent(YAML::Node node)
+    {
+        auto c = actor->AddComponent<StaticBodyComponent>();
+
+        c->Config.AngularDamping = node["AngularDamping"].as<float>();
+        c->Config.LinearDamping = node["LinearDamping"].as<float>();
+        c->Config.Friction = node["Friction"].as<float>();
+        c->Config.Restitution = node["Restitution"].as<float>();
+    }
+
+    void ComponentSerializer::_SerializeColliderComponent(ColliderComponent *c, int index,
+                                                          YAML::Emitter &out)
+    {
+        out << YAML::Key << "ColliderComponent " + std::to_string(index);
+        out << YAML::BeginMap;
+
+        ColliderType type = c->Config.Type;
+
+        CE_SERIALIZE_FIELD("Type", (int)type);
+
+        switch (type)
+        {
+        default:
+            break;
+
+        case ColliderType::Box:
+        {
+            CE_SERIALIZE_FIELD("Width", c->Config.BoxType.Width);
+            CE_SERIALIZE_FIELD("Height", c->Config.BoxType.Height);
+            CE_SERIALIZE_FIELD("Depth", c->Config.BoxType.Depth);
+        }
+        break;
+        }
+
+        out << YAML::EndMap;
+    }
+
+    void ComponentSerializer::_DeserializeColliderComponent(YAML::Node node)
+    {
+        auto c = actor->AddComponent<ColliderComponent>();
+
+        ColliderType type = (ColliderType)(node["Type"].as<int>());
+        c->Config.Type = type;
+        switch (type)
+        {
+        default:
+            CE_WARN("Unknown type when deserializing");
+            // todo: warnings?
+            break;
+
+        case ColliderType::Box:
+            c->Config.BoxType.Width = node["Width"].as<float>();
+            c->Config.BoxType.Height = node["Height"].as<float>();
+            c->Config.BoxType.Depth = node["Depth"].as<float>();
+            break;
+        }
+    }
+
 } // namespace Core

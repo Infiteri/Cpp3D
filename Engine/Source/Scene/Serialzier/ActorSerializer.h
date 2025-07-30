@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Core/Serializer/CeSerializer.h"
-#include "Scene/Actor.h"
 #include <string>
 
 namespace Core
@@ -9,7 +8,7 @@ namespace Core
     class CE_API ActorSerializer : public CeSerializer
     {
     private:
-        Actor *actor;
+        class Actor *actor;
 
         void _DeserializeActor(YAML::Node actor, Actor *a);
 

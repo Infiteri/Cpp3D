@@ -16,6 +16,7 @@ namespace Core
         CeDataSet();
         ~CeDataSet();
 
+        void Rename(const std::string &oldName, const std::string &newName);
         void Add(const std::string &name, CeDataType dt = CeDataType::None, void *data = nullptr);
         void Remove(const std::string &name);
         CeData *Get(const std::string &name);

@@ -2,6 +2,7 @@
 #include "Base.h"
 
 #include "Core/Logger.h"
+#include "Physics/Collider/Collider.h"
 #include "Renderer/Geometry/Geometry.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Shader/ShaderSystem.h"
@@ -141,4 +142,38 @@ namespace Core
     void ScriptComponent::Start() {}
 
     void ScriptComponent::From(ScriptComponent *other) { ClassName = other->ClassName; }
+
+    RigidBodyComponent::RigidBodyComponent()
+    {
+        Config.ColliderConfig.Type = ColliderType::Box;
+        Config.ColliderConfig.BoxType.Width = 1;
+        Config.ColliderConfig.BoxType.Height = 1;
+        Config.ColliderConfig.BoxType.Depth = 1;
+    }
+
+    void RigidBodyComponent::From(RigidBodyComponent *other)
+    {
+        if (!other)
+            return;
+
+        Config = other->Config;
+    }
+
+    StaticBodyComponent::StaticBodyComponent()
+    {
+        Config.ColliderConfig.Type = ColliderType::Box;
+        Config.ColliderConfig.BoxType.Width = 1;
+        Config.ColliderConfig.BoxType.Height = 1;
+        Config.ColliderConfig.BoxType.Depth = 1;
+    }
+
+    void StaticBodyComponent::From(StaticBodyComponent *other)
+    {
+        if (!other)
+            return;
+
+        Config = other->Config;
+    }
+
+    void ColliderComponent::From(ColliderComponent *other) { Config = other->Config; }
 } // namespace Core

@@ -2,6 +2,7 @@
 
 #include "Core/Logger.h"
 #include "Core/Serializer/CeSerializer.h"
+#include "Scene/Actor.h"
 #include "Scene/Serialzier/ComponentSerializer.h"
 #include "yaml-cpp/emittermanip.h"
 
@@ -44,8 +45,6 @@ namespace Core
             CE_LOG("CE_SCENE", Error, "Cannot serialize actor, actor is null");
             return;
         }
-
-        CE_DEBUG("SERIALIZE");
 
         out << YAML::BeginMap;
 
