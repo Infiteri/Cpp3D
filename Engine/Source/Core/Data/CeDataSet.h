@@ -18,6 +18,7 @@ namespace Core
 
         void Rename(const std::string &oldName, const std::string &newName);
         void Add(const std::string &name, CeDataType dt = CeDataType::None, void *data = nullptr);
+        void Add(CeData *data, const std::string &name);
         void Remove(const std::string &name);
         CeData *Get(const std::string &name);
         bool Exists(const std::string &name);

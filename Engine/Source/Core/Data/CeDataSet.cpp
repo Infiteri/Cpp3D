@@ -38,6 +38,14 @@ namespace Core
         data[name] = ceData;
     }
 
+    void CeDataSet::Add(CeData *ceData, const std::string &name)
+    {
+        if (Exists(name))
+            return;
+
+        data[name] = ceData;
+    }
+
     void CeDataSet::Remove(const std::string &name)
     {
         if (!Exists(name))

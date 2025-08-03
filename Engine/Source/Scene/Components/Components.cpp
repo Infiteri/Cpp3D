@@ -11,6 +11,19 @@
 
 namespace Core
 {
+
+    void CeDataComponent::From(CeDataComponent *other)
+    {
+        CE_VERIFY(other);
+
+        for (auto &[name, data] : other->Set.GetDataSet())
+        {
+            CeData *c = new CeData();
+            c->From(data);
+            Set.Add(c, name);
+        }
+    }
+
     MeshComponent::MeshComponent() { mesh = new Mesh(); }
 
     MeshComponent::~MeshComponent()

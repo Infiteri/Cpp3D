@@ -31,6 +31,8 @@ namespace Core
         void _DestroyOnType();
         void _SetupDefaultOnType();
 
+        void From(CeData *other);
+
         void SetName(const std::string &name);
         void SetType(CeDataType dt);
 

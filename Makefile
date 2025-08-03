@@ -4,13 +4,13 @@ export DEFINES := -D_DEBUG -DCE_WITH_EDITOR -DCE_WIN32
 export VENDOR_INCLUDE := -IEngine/Vendor/GLFW/include -IEngine/Vendor/glad/include -IEngine/Vendor/ImGui -IEngine/Vendor/stb -IEngine/Vendor/YAML/include -IEngine/Vendor/ImGuizmo -IEngine/Vendor/bullet/src
 export COMPILER_FLAGS := -g -std=c++17
 
-.PHONY: Scratch Full All Engine Editor VendorCopy VendorBuild AssetsCopy ProjectCopy Scaffold CleanObj CleanAll EditorManualLink
+.PHONY: Scratch Full All Engine Editor VendorCopy VendorBuild AssetsCopy CopyCoreFiles Scaffold CleanObj CleanAll EditorManualLink
 
 All: Engine Editor
 
 Scratch: Scaffold VendorBuild Full
 
-Full: Scaffold VendorCopy AssetsCopy ProjectCopy Engine Editor
+Full: Scaffold VendorCopy AssetsCopy CopyCoreFiles Engine Editor
 
 EditorManualLink:
 	@$(MAKE) -f Editor/Makefile manual_link
@@ -48,9 +48,11 @@ AssetsCopy:
 	cp -r "Engine\Assets" "Bin\EngineAssets"
 	cp -r "UsedAssets" "Bin\Assets"
 
-ProjectCopy:
+CopyCoreFiles:
 	cp "Engine\Assets\Proj.ce_proj" "Bin\Proj.ce_proj"
-
+	cp "Engine\Assets\imgui.ini" "Bin\imgui.ini"
+	cp "Editor\EditorSettings.ce_settings" "Bin\EditorSettings.ce_settings"
+	
 Scaffold:
 	mkdir -p $(BUILD_DIR)
 	mkdir -p $(OBJ_DIR)

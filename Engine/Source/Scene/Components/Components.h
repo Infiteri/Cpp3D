@@ -2,6 +2,7 @@
 
 #include "Base.h"
 
+#include "Core/Data/CeDataSet.h"
 #include "Physics/Body/Config.h"
 #include "Physics/Body/RigidBody.h"
 #include "Physics/Body/StaticBody.h"
@@ -10,7 +11,7 @@
 #include "Renderer/Light/PointLight.h"
 #include "Renderer/Light/SpotLight.h"
 #include "Renderer/Object/Mesh.h"
-#include <memory>
+
 #include <string>
 
 namespace Core
@@ -34,6 +35,14 @@ namespace Core
         virtual void Stop() {};
 
         virtual void From(Component *comp) {}
+    };
+
+    class CE_API CeDataComponent : public Component
+    {
+    public:
+        CeDataSet Set;
+
+        void From(CeDataComponent *other);
     };
 
     class CE_API MeshComponent : public Component

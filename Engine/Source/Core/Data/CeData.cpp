@@ -22,6 +22,13 @@
         data = new cast();                                                                         \
     }                                                                                              \
     break
+#define CE_COPY_TYPE(type, cast, exp)                                                              \
+    case CeDataType::type:                                                                         \
+    {                                                                                              \
+        cast *v = other->As<cast>();                                                               \
+        data = exp;                                                                                \
+    }                                                                                              \
+    break;
 
 namespace Core
 {
@@ -33,6 +40,28 @@ namespace Core
     }
 
     CeData::~CeData() { _DestroyOnType(); }
+
+    void CeData::From(CeData *other)
+    {
+        if (type != CeDataType::None)
+        {
+            _DestroyOnType();
+        }
+
+        switch (other->type)
+        {
+        case CeDataType::None:
+        default:
+            CE_WARN("Cannot copy type of none for CeData::From");
+            break;
+
+            CE_COPY_TYPE(Vector2, Vector2, new Vector2(v->x, v->y));
+            CE_COPY_TYPE(Vector3, Vector3, new Vector3(v->x, v->y, v->z));
+            CE_COPY_TYPE(Vector4, Vector4, new Vector4(v->x, v->y, v->z, v->w));
+            CE_COPY_TYPE(Color, Color, new Color(v->r, v->g, v->b, v->a));
+            CE_COPY_TYPE(Float, float, new float(*v));
+        }
+    }
 
     void CeData::SetName(const std::string &name) { this->name = name; }
 
